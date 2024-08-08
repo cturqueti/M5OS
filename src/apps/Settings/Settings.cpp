@@ -2,6 +2,9 @@
 
 #include <M5Cardputer.h>
 
+#include "Globals.h"
+#include "ScreenManager.h"
+
 Settings::Settings() {
     // Inicialização do aplicativo
 }
@@ -11,13 +14,24 @@ Settings::~Settings() {
 }
 
 void Settings::tick() {
+    printf("Testando o programa");
+    delay(1000);
     // Lógica de atualização do aplicativo
 }
 
 void Settings::draw() {
-    M5.Lcd.clear();
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(10, 10);
-    M5.Lcd.print("Settings");
-    // Desenhe a interface de configurações aqui
+    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+        M5Canvas& canvas = ScreenManager::getCanvas();
+
+        canvas.fillSprite(TFT_BLACK);  // Limpa o canvas
+        canvas.setTextSize(2);
+        canvas.setTextColor(TFT_WHITE);
+        canvas.setCursor(10, 10);
+        canvas.print("Settings");
+
+        // Adicione mais desenho aqui
+
+        canvas.pushSprite(0, 0);  // Desenha o canvas no display
+        xSemaphoreGive(canvasSemaphore);
+    }
 }

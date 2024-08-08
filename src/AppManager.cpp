@@ -87,3 +87,15 @@ void AppManager::draw() {
         currentApp->draw();  // Desenha o aplicativo atual
     }
 }
+
+std::vector<std::pair<std::string, App*>> AppManager::listApps() {
+    std::vector<std::pair<std::string, App*>> appsList;
+
+    // Supondo que você tenha um mapa ou outro container que mantém os aplicativos
+    for (const auto& app : apps) {
+        // Certifique-se de converter o tipo para std::string
+        appsList.push_back(std::make_pair(app.first.c_str(), app.second));
+    }
+
+    return appsList;
+}

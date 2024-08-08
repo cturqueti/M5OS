@@ -25,6 +25,7 @@ class AppManager {
     String getCurrentAppName() const;
     void tickCurrentApp();
     void draw();
+    std::vector<std::pair<std::string, App*>> listApps();
 
    private:
     AppManager();

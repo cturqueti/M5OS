@@ -1,7 +1,3 @@
-//
-// Created by WauHu on 13.01.2024.
-//
-
 #ifndef SCREENMANAGER_H
 #define SCREENMANAGER_H
 
@@ -10,16 +6,16 @@
 #include "M5Cardputer.h"
 #include "M5GFX.h"
 
+extern M5Canvas canvas;
+
 class StatusBar {
-public:
+   public:
     static void draw(bool force = false);
 };
 
 class ScreenManager {
-public:
-    static M5Canvas getCanvas();
+   public:
+    static M5Canvas& getCanvas();  // Retorna uma referência ao canvas
 };
 
-extern M5Canvas canvas; // NOLINT(*-interfaces-global-init)
-
-#endif //SCREENMANAGER_H
+#endif  // SCREENMANAGER_H

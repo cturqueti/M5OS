@@ -1,14 +1,33 @@
 #include <M5Cardputer.h>
 
+#include "Adafruit_NeoPixel.h"
 #include "AppManager.h"
+#include "Globals.h"
+#include "Preferences.h"
+#include "ScreenManager.h"
+#include "Utils.h"
 #include "apps/Calculadora/Calculadora.h"
 #include "apps/Settings/Settings.h"
 
+SemaphoreHandle_t canvasSemaphore;
+
 void setup() {
     // Inicializa o M5Cardputer e outros componentes
-    M5.begin();
-    M5.Lcd.setRotation(3);  // Ajuste a rotação do display conforme necessário
+    canvasSemaphore = xSemaphoreCreateMutex();
+    Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, 21, NEO_GRB + NEO_KHZ800);
+    pixels.setPixelColor(0, Adafruit_NeoPixel::Color(0, 0, 0));
+    pixels.show();
 
+    Preferences preferences;
+    auto cfg = m5::M5Unified::config();
+    M5Cardputer.begin(cfg, true);
+
+    M5Cardputer.update();
+    M5Cardputer.Display.setColorDepth(8);
+    M5Cardputer.Display.setRotation(1);
+
+    canvas.createSprite(240, 135);
+    Utils::initCanvas();
     // Inicializa o AppManager
     AppManager& appManager = AppManager::getInstance();
 
