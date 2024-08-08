@@ -3,72 +3,87 @@
 #include <M5Cardputer.h>
 #include <SD.h>
 
-#include "ScreenManager.h"
-#include "Utils.h"
-#include "assets/hydra.h"
+AppManager::AppManager() : currentAppName(""), currentApp(nullptr) {}
 
-AppManager::AppManager() = default;
-
-AppManager& AppManager::getInstance() {
-    static AppManager instance;
-    return instance;
+AppManager::~AppManager() {
+    closeCurrentApp();
+    for (auto& app : apps) {
+        delete app.second;  // Libera memória dos aplicativos
+    }
 }
 
-void AppManager::addApp(const std::string& name, App* app) {
-    apps[name] = app;
+void AppManager::addApp(const String& appName, App* app) {
+    if (apps.find(appName) == apps.end()) {
+        apps[appName] = app;
+    }
 }
 
-void AppManager::openApp(const std::string& name) {
-    if (currentApp != nullptr) {
-        currentApp->onAppClose();
-    }
+void AppManager::openApp(const String& appName) {
+    closeCurrentApp();      // Fecha o app atual, se houver
+    startAppTask(appName);  // Inicia a tarefa do novo app
+    currentAppName = appName;
+    currentApp = getApp(appName);  // Atualiza o app atual
+}
 
-    // try to find the app by name
-    if (apps.find(name) == apps.end()) {
-        Utils::popup("Error: App not found", 5000);
-        return;
+void AppManager::closeApp(const String& appName) {
+    if (apps.find(appName) != apps.end()) {
+        App* app = apps[appName];
+        vTaskDelete(app->getTaskHandle());  // Deleta a tarefa do app
+        currentAppName = "";
+        delete app;
+        apps.erase(appName);  // Remove o app do mapa
     }
-
-    currentApp = apps[name];
-    Utils::initCanvas();
-    currentApp->onAppOpen();
 }
 
 void AppManager::closeCurrentApp() {
-    if (currentApp != nullptr) {
-        currentApp->onAppClose();
-        currentApp = nullptr;
+    if (!currentAppName.isEmpty()) {
+        closeApp(currentAppName);
     }
 }
 
-void AppManager::tickCurrentApp() const {
-    if (currentApp != nullptr) {
-        currentApp->onAppTick();
+void AppManager::startAppTask(const String& appName) {
+    App* app = getApp(appName);
+    if (app) {
+        // Captura o handle da tarefa no contexto correto
+        xTaskCreatePinnedToCore(
+            [](void* param) {
+                App* app = static_cast<App*>(param);
+                // Atualiza o handle da tarefa no contexto da tarefa criada
+                app->setTaskHandle(xTaskGetCurrentTaskHandle());
+                while (true) {
+                    app->tick();                    // Chama a função de atualização do app
+                    vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
+                }
+            },
+            appName.c_str(),
+            8192,     // Tamanho da stack
+            app,      // Parâmetro passado para a função
+            1,        // Prioridade
+            nullptr,  // Handle da tarefa
+            1);       // Executar no Core 1
     }
 }
 
-void AppManager::draw() const {
-    if (currentApp != nullptr) {
-        currentApp->draw();
+App* AppManager::getApp(const String& appName) {
+    auto it = apps.find(appName);
+    if (it != apps.end()) {
+        return it->second;
     }
-}
-
-std::map<std::string, App*> AppManager::listApps() {
-    return apps;
+    return nullptr;
 }
 
 String AppManager::getCurrentAppName() const {
-    if (currentApp != nullptr) {
-        return currentApp->getName();
-    } else {
-        return "Loading...";
+    return currentAppName;
+}
+
+void AppManager::tickCurrentApp() {
+    if (currentApp) {
+        currentApp->tick();  // Atualiza o aplicativo atual
     }
 }
 
-App* AppManager::getApp(const std::string& name) {
-    return apps[name];
-}
-
-App* AppManager::getCurrentApp() const {  // Adicione esta implementação
-    return currentApp;
+void AppManager::draw() {
+    if (currentApp) {
+        currentApp->draw();  // Desenha o aplicativo atual
+    }
 }

@@ -1,28 +1,42 @@
-#pragma once
+#ifndef APP_MANAGER_H
+#define APP_MANAGER_H
 
-#include <WString.h>
+#include <Arduino.h>
 
 #include <map>
-#include <string>
 
 #include "App.h"
 
 class AppManager {
-   private:
-    std::map<std::string, App*> apps{};
-    AppManager();
-
    public:
-    App* currentApp = nullptr;
+    // Singleton instance
+    static AppManager& getInstance() {
+        static AppManager instance;
+        return instance;
+    }
 
-    static AppManager& getInstance();
-    void addApp(const std::string& name, App* app);
-    void openApp(const std::string& name);
+    // Métodos para gerenciar aplicativos
+    void addApp(const String& appName, App* app);
+    void openApp(const String& appName);
+    void closeApp(const String& appName);
     void closeCurrentApp();
-    void tickCurrentApp() const;
-    void draw() const;
+    void startAppTask(const String& appName);
+    App* getApp(const String& appName);
     String getCurrentAppName() const;
-    std::map<std::string, App*> listApps();
-    App* getApp(const std::string& name);
-    App* getCurrentApp() const;  // Adicione esta linha
+    void tickCurrentApp();
+    void draw();
+
+   private:
+    AppManager();
+    ~AppManager();
+
+    std::map<String, App*> apps;  // Mapeia nomes de aplicativos para instâncias
+    String currentAppName;
+    App* currentApp;
+
+    // Não permite a cópia
+    AppManager(const AppManager&) = delete;
+    AppManager& operator=(const AppManager&) = delete;
 };
+
+#endif  // APP_MANAGER_H
