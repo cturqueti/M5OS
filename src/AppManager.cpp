@@ -20,11 +20,9 @@ void AppManager::addApp(const String& appName, App* app) {
 
 void AppManager::openApp(const String& appName) {
     if (apps.find(appName) != apps.end()) {
-        // Se o aplicativo já estiver aberto, não faz nada
         if (appTasks.find(appName) != appTasks.end()) {
             return;
         }
-
         startAppTask(appName);
         currentAppName = appName;
         currentApp = getApp(appName);  // Atualiza o app atual
@@ -36,8 +34,7 @@ void AppManager::openApp(const String& appName) {
 }
 
 void AppManager::openBackgroundApp(const String& name) {
-    auto it = apps.find(name);
-    if (it != apps.end()) {
+    if (apps.find(name) != apps.end()) {
         backgroundApps.push_back(name);
         startAppTask(name);
     }
@@ -76,7 +73,6 @@ void AppManager::startAppTask(const String& appName) {
 
     App* app = getApp(appName);
     if (app) {
-        // Captura o handle da tarefa no contexto correto
         xTaskCreatePinnedToCore(
             [](void* param) {
                 App* app = static_cast<App*>(param);
@@ -126,18 +122,10 @@ void AppManager::draw() {
 
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {
     std::vector<std::pair<std::string, App*>> appsList;
-
-    // Supondo que você tenha um mapa ou outro container que mantém os aplicativos
     for (const auto& app : apps) {
-        // Certifique-se de converter o tipo para std::string
         appsList.push_back(std::make_pair(app.first.c_str(), app.second));
     }
-
     return appsList;
-}
-
-void AppManager::addBackgroundApp(const String& name) {
-    openBackgroundApp(name);  // Utilize a lógica existente para adicionar aplicativos em segundo plano
 }
 
 void AppManager::removeBackgroundApp(const String& name) {
@@ -158,7 +146,10 @@ void AppManager::runBackgroundTasks() {
 }
 
 void AppManager::drawBackgroundApps() {
-    if (backgroundApp) {
-        backgroundApp->draw();  // Desenha o aplicativo em segundo plano
+    for (const auto& appName : backgroundApps) {
+        App* app = getApp(appName);
+        if (app) {
+            app->draw();  // Desenha o aplicativo em segundo plano
+        }
     }
 }

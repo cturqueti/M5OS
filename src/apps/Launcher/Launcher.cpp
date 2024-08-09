@@ -34,6 +34,7 @@ void Launcher::onAppTick() {
     if (needRedraw) {
         // Utils::initCanvas();
         // StatusBar::draw(true);
+        tempCanvas.createSprite(240, 135);
         tempCanvas.fillSprite(TFT_BLACK);
         if (apps.empty()) {
             tempCanvas.setTextSize(2);
@@ -46,7 +47,7 @@ void Launcher::onAppTick() {
 
         tempCanvas.setTextSize(2);
         tempCanvas.setTextColor(WHITE);
-        tempCanvas.drawCenterString(apps[selectIndex], 120, 5);
+        tempCanvas.drawCenterString(apps[selectIndex], 120, 110);
         printf("Programa selecionado %s\n", apps[selectIndex].c_str());
         if (apps.size() > 1) {
             tempCanvas.setCursor(10, 67);
@@ -56,13 +57,13 @@ void Launcher::onAppTick() {
         int x = ((240 - 75) / 2);
         int y2 = ((135 - 75) / 2);
 
-        // if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
-        //     tempCanvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
-        //                        AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
-        //                        x, y2, 75, 75);
-        // } else {
-        //     // nop
-        // }
+        if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
+            tempCanvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
+                               AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
+                               x, y2, 75, 75);
+        } else {
+            // nop
+        }
 
         needRedraw = false;
     }

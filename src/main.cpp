@@ -45,7 +45,7 @@ void setup() {
     appManager.addApp("Launcher", launcher);
     // appManager.addApp("Keyboard", keyboard);
 
-    appManager.addBackgroundApp("Keyboard");
+    appManager.openBackgroundApp("Keyboard");
 
     appManager.openApp("Launcher");
 }

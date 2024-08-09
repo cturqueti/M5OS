@@ -4,6 +4,8 @@
 #include <Arduino.h>
 
 #include <map>
+#include <utility>
+#include <vector>
 
 #include "App.h"
 
@@ -27,10 +29,7 @@ class AppManager {
     void tickCurrentApp();
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
-
-    void addBackgroundApp(const String& name);
     void removeBackgroundApp(const String& name);
-    void drawBackgroundApps();
 
    private:
     AppManager();
@@ -41,9 +40,9 @@ class AppManager {
     std::vector<String> backgroundApps;
     String currentAppName;
     App* currentApp;
-    App* backgroundApp;
 
     void runBackgroundTasks();
+    void drawBackgroundApps();
 
     // Não permite a cópia
     AppManager(const AppManager&) = delete;
