@@ -32,6 +32,7 @@ class AppManager {
     ~AppManager();
 
     std::map<String, App*> apps;  // Mapeia nomes de aplicativos para instâncias
+    std::map<String, TaskHandle_t> appTasks;
     String currentAppName;
     App* currentApp;
 

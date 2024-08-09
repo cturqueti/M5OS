@@ -18,7 +18,8 @@ void Calculadora::onAppTick() {
 
 void Calculadora::onAppOpen() {
     StatusBar::draw();
-    // M5Canvas& canvas = ScreenManager::getCanvas();
+    DrawingArea area = StatusBar::area;
+    tempCanvas.createSprite(area.width, area.height);
 }
 
 void Calculadora::onAppClose() {
@@ -26,10 +27,12 @@ void Calculadora::onAppClose() {
 }
 
 void Calculadora::draw() {
-    // tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
-    tempCanvas.setTextSize(2);
-    tempCanvas.setTextColor(TFT_WHITE);
-    tempCanvas.setCursor(50, 67);
+    tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
+    DrawingArea area = StatusBar::area;
+
+    tempCanvas.setTextSize(1);
+    tempCanvas.setTextColor(TFT_GREEN);
+    tempCanvas.setCursor(5, 5);
     tempCanvas.print("Calculadora");
 
     // Sincroniza a operação com o canvas definitivo usando o semáforo global
@@ -37,9 +40,10 @@ void Calculadora::draw() {
         M5Canvas& canvas = ScreenManager::getCanvas();
 
         // Copia o conteúdo do canvas temporário para o canvas definitivo
-        tempCanvas.pushSprite(&canvas, 0, 0);
+        tempCanvas.pushSprite(&canvas, area.xStart, area.yStart);
 
         // Libera o semáforo após o uso
         xSemaphoreGive(canvasSemaphore);
+        canvas.pushSprite(0, 0);
     }
 }

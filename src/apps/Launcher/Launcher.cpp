@@ -59,6 +59,7 @@ void Launcher::onAppTick() {
 
         needRedraw = false;
     }
+    M5Cardputer.update();
     if (M5Cardputer.Keyboard.isChange() && !apps.empty()) {
         Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
         if (M5Cardputer.Keyboard.isKeyPressed('/')) {

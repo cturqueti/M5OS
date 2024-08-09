@@ -17,7 +17,6 @@ void Settings::onAppTick() {
 }
 
 void Settings::onAppOpen() {
-
 }
 
 void Settings::onAppClose() {

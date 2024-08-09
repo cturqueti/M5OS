@@ -23,6 +23,8 @@ class Settings : public App {
     void onAppClose() override;
     void onAppTick() override;
     void draw() override;
+    private:
+
 };
 
 #endif  // SETTINGS_H

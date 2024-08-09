@@ -7,6 +7,8 @@
 #include "ScreenManager.h"
 #include "Utils.h"
 #include "apps/Calculadora/Calculadora.h"
+#include "apps/Keyboard/Keyboard.h"
+#include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
 
 SemaphoreHandle_t canvasSemaphore;
@@ -34,13 +36,18 @@ void setup() {
     // Cria instâncias dos aplicativos
     Calculadora* calc = new Calculadora();
     Settings* settings = new Settings();
+    Launcher* launcher = new Launcher();
+    Keyboard* keyboard = new Keyboard();
 
     // Adiciona aplicativos ao AppManager
     appManager.addApp("Calculadora", calc);
     appManager.addApp("Settings", settings);
+    appManager.addApp("Launcher", launcher);
+    appManager.addApp("Keyboard", keyboard);
 
-    // Abre o aplicativo de Calculadora
-    appManager.openApp("Calculadora");
+    // Abre o aplicativo de Launcher
+    appManager.openApp("Launcher");
+     appManager.openApp("Keyboard");
 }
 
 void loop() {
