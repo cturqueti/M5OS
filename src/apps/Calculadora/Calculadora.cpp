@@ -17,7 +17,8 @@ void Calculadora::onAppTick() {
 }
 
 void Calculadora::onAppOpen() {
-    M5Canvas& canvas = ScreenManager::getCanvas();
+    StatusBar::draw();
+    // M5Canvas& canvas = ScreenManager::getCanvas();
 }
 
 void Calculadora::onAppClose() {
@@ -25,7 +26,7 @@ void Calculadora::onAppClose() {
 }
 
 void Calculadora::draw() {
-    tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
+    // tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
     tempCanvas.setTextSize(2);
     tempCanvas.setTextColor(TFT_WHITE);
     tempCanvas.setCursor(50, 67);
