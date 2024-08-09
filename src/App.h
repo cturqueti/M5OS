@@ -20,8 +20,12 @@ class App {
     TaskHandle_t getTaskHandle() const;
     void setTaskHandle(TaskHandle_t handle);
 
-    virtual size_t getIconSize() const { return 0; }            // Método padrão que deve ser sobrescrito
-    virtual const uint8_t* getIcon() const { return nullptr; }  // Método padrão que deve ser sobrescrito
+    virtual const uint8_t* getIcon() {
+        return nullptr;
+    };
+    virtual size_t getIconSize() {
+        return 0;
+    };
 
    protected:
     TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa

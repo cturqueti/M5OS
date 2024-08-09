@@ -37,17 +37,17 @@ void setup() {
     Calculadora* calc = new Calculadora();
     Settings* settings = new Settings();
     Launcher* launcher = new Launcher();
-    Keyboard* keyboard = new Keyboard();
+    // Keyboard* keyboard = new Keyboard();
 
     // Adiciona aplicativos ao AppManager
     appManager.addApp("Calculadora", calc);
     appManager.addApp("Settings", settings);
     appManager.addApp("Launcher", launcher);
-    appManager.addApp("Keyboard", keyboard);
+    // appManager.addApp("Keyboard", keyboard);
 
-    // Abre o aplicativo de Launcher
+    appManager.addBackgroundApp("Keyboard");
+
     appManager.openApp("Launcher");
-     appManager.openApp("Keyboard");
 }
 
 void loop() {

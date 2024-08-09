@@ -13,6 +13,7 @@
 #include "SD.h"
 #include "ScreenManager.h"
 #include "Utils.h"
+#include "icon.h"
 
 class Calculadora : public App {
    private:
@@ -26,6 +27,9 @@ class Calculadora : public App {
     void onAppClose() override;
     void onAppTick() override;
     void draw() override;
+
+    const uint8_t* getIcon() override;
+    size_t getIconSize() override;
 };
 
 #endif  // CALCULADORA_H

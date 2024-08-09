@@ -11,15 +11,26 @@ Calculadora::~Calculadora() {
 }
 
 void Calculadora::onAppTick() {
-    printf("Testando o programa");
-    delay(1000);
-    // Lógica de atualização do aplicativo
+    // printf("Testando o programa");
+    // delay(1000);
+    //  Lógica de atualização do aplicativo
 }
 
 void Calculadora::onAppOpen() {
+    printf("Iniciando Calculadora...\n");
+    printf("Tamanho do ícone: %zu\n", getIconSize());
+
+    const uint8_t* icon = getIcon();
+    if (icon) {
+        printf("Ícone carregado com sucesso.\n");
+    } else {
+        printf("Erro ao carregar ícone.\n");
+    }
+
     StatusBar::draw();
     DrawingArea area = StatusBar::area;
     tempCanvas.createSprite(area.width, area.height);
+    tempCanvas.fillSprite(TFT_BLACK);
 }
 
 void Calculadora::onAppClose() {
@@ -27,9 +38,10 @@ void Calculadora::onAppClose() {
 }
 
 void Calculadora::draw() {
-    tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
+    // Limpa o canvas temporário
     DrawingArea area = StatusBar::area;
 
+    tempCanvas.drawPng(getIcon(), getIconSize(), 50, 50, 75, 75);
     tempCanvas.setTextSize(1);
     tempCanvas.setTextColor(TFT_GREEN);
     tempCanvas.setCursor(5, 5);
@@ -46,4 +58,12 @@ void Calculadora::draw() {
         xSemaphoreGive(canvasSemaphore);
         canvas.pushSprite(0, 0);
     }
+}
+
+const uint8_t* Calculadora::getIcon() {
+    return calc_icon;
+}
+
+size_t Calculadora::getIconSize() {
+    return sizeof(calc_icon);
 }

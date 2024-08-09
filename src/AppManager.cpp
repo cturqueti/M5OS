@@ -35,10 +35,17 @@ void AppManager::openApp(const String& appName) {
     }
 }
 
+void AppManager::openBackgroundApp(const String& name) {
+    auto it = apps.find(name);
+    if (it != apps.end()) {
+        backgroundApps.push_back(name);
+        startAppTask(name);
+    }
+}
+
 void AppManager::closeApp(const String& appName) {
     auto it = appTasks.find(appName);
     if (it != appTasks.end()) {
-        // Se a tarefa do aplicativo estiver rodando, delete a tarefa
         vTaskDelete(it->second);
         appTasks.erase(it);
     }
@@ -107,12 +114,14 @@ void AppManager::tickCurrentApp() {
     if (currentApp) {
         currentApp->onAppTick();  // Atualiza o aplicativo atual
     }
+    runBackgroundTasks();
 }
 
 void AppManager::draw() {
     if (currentApp) {
         currentApp->draw();  // Desenha o aplicativo atual
     }
+    drawBackgroundApps();
 }
 
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {
@@ -125,4 +134,31 @@ std::vector<std::pair<std::string, App*>> AppManager::listApps() {
     }
 
     return appsList;
+}
+
+void AppManager::addBackgroundApp(const String& name) {
+    openBackgroundApp(name);  // Utilize a lógica existente para adicionar aplicativos em segundo plano
+}
+
+void AppManager::removeBackgroundApp(const String& name) {
+    auto it = std::find(backgroundApps.begin(), backgroundApps.end(), name);
+    if (it != backgroundApps.end()) {
+        backgroundApps.erase(it);
+        closeApp(name);  // Feche a tarefa do aplicativo
+    }
+}
+
+void AppManager::runBackgroundTasks() {
+    for (const auto& appName : backgroundApps) {
+        App* app = getApp(appName);
+        if (app) {
+            app->onAppTick();  // Atualize o aplicativo de segundo plano
+        }
+    }
+}
+
+void AppManager::drawBackgroundApps() {
+    if (backgroundApp) {
+        backgroundApp->draw();  // Desenha o aplicativo em segundo plano
+    }
 }

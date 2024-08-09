@@ -39,3 +39,11 @@ void Settings::draw() {
         xSemaphoreGive(canvasSemaphore);
     }
 }
+
+const uint8_t* Settings::getIcon() {
+    return settings_icon;
+}
+
+size_t Settings::getIconSize() {
+    return sizeof(settings_icon);
+}

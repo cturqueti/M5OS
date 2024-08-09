@@ -13,6 +13,7 @@
 #include "SD.h"
 #include "ScreenManager.h"
 #include "Utils.h"
+#include "icon.h"
 
 class Settings : public App {
    public:
@@ -23,8 +24,11 @@ class Settings : public App {
     void onAppClose() override;
     void onAppTick() override;
     void draw() override;
-    private:
+    
+    const uint8_t* getIcon() override;
+    size_t getIconSize() override;
 
+   private:
 };
 
 #endif  // SETTINGS_H

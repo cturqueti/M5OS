@@ -1,17 +1,22 @@
 #include "Launcher.h"
 
+M5Canvas Launcher::tempCanvas(&M5.Lcd);
+
 Launcher::Launcher() : selectIndex(0), needRedraw(true) {
-    // Inicialização do Launcher
+    tempCanvas.createSprite(240, 135);
 }
 
 Launcher::~Launcher() {
-    // Limpeza dos recursos
+    tempCanvas.deleteSprite();
 }
 
 void Launcher::onAppOpen() {
+    StatusBar::draw();
+    DrawingArea area = StatusBar::area;
+    tempCanvas.createSprite(area.width, area.height);
     // Obtém todos os aplicativos do AppManager
     auto fetchedApps = AppManager::getInstance().listApps();
-    for (auto &app : fetchedApps) {
+    for (auto& app : fetchedApps) {
         if (app.first == "Launcher") {
             continue;
         }
@@ -27,35 +32,37 @@ void Launcher::onAppClose() {
 
 void Launcher::onAppTick() {
     if (needRedraw) {
-        Utils::initCanvas();
-        StatusBar::draw(true);
+        // Utils::initCanvas();
+        // StatusBar::draw(true);
+        tempCanvas.fillSprite(TFT_BLACK);
         if (apps.empty()) {
-            canvas.setTextSize(2);
-            canvas.setTextColor(WHITE);
-            canvas.drawCenterString("No apps found", 120, 66);
-            canvas.pushSprite(0, 0);
+            tempCanvas.setTextSize(2);
+            tempCanvas.setTextColor(WHITE);
+            tempCanvas.drawCenterString("No apps found", 120, 66);
+            tempCanvas.pushSprite(0, 0);
             needRedraw = false;
             return;
         }
-        canvas.setTextSize(2);
-        canvas.setTextColor(WHITE);
-        canvas.drawCenterString(apps[selectIndex], 120, 110);
+
+        tempCanvas.setTextSize(2);
+        tempCanvas.setTextColor(WHITE);
+        tempCanvas.drawCenterString(apps[selectIndex], 120, 5);
+        printf("Programa selecionado %s\n", apps[selectIndex].c_str());
         if (apps.size() > 1) {
-            canvas.setCursor(10, 67);
-            canvas.print("<");
-            canvas.drawRightString(">", 230, 67);
+            tempCanvas.setCursor(10, 67);
+            tempCanvas.print("<");
+            tempCanvas.drawRightString(">", 230, 67);
         }
-        String iconPath = "/icons/" + apps[selectIndex] + ".png";
         int x = ((240 - 75) / 2);
         int y2 = ((135 - 75) / 2);
 
-        if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
-            canvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
-                           AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
-                           x, y2, 75, 75);
-        } else {
-            // canvas.drawPng(hydra, 435, x + 5, y2 + 5, 75, 75, 0, 0, 2, 2);
-        }
+        // if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
+        //     tempCanvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
+        //                        AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
+        //                        x, y2, 75, 75);
+        // } else {
+        //     // nop
+        // }
 
         needRedraw = false;
     }
@@ -83,5 +90,16 @@ void Launcher::onAppTick() {
 }
 
 void Launcher::draw() {
-    canvas.pushSprite(0, 0);
+    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+        M5Canvas& canvas = ScreenManager::getCanvas();
+
+        canvas.fillSprite(TFT_BLACK);
+
+        // Copia o conteúdo do canvas temporário para o canvas definitivo
+        tempCanvas.pushSprite(&canvas, 0, 0);
+
+        // Libera o semáforo após o uso
+        xSemaphoreGive(canvasSemaphore);
+        canvas.pushSprite(0, 0);
+    }
 }

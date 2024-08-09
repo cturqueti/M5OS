@@ -17,6 +17,7 @@ class Launcher : public App {
     int selectIndex;
     bool needRedraw;
     std::vector<String> apps;
+    static M5Canvas tempCanvas;
 
    public:
     Launcher();
