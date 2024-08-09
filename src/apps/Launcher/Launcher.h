@@ -18,6 +18,7 @@ class Launcher : public App {
     bool needRedraw;
     std::vector<String> apps;
     static M5Canvas tempCanvas;
+    static DrawingArea drawingArea;
 
    public:
     Launcher();

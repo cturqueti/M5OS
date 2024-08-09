@@ -1,9 +1,14 @@
 #include "Launcher.h"
 
 M5Canvas Launcher::tempCanvas(&M5.Lcd);
+DrawingArea Launcher::drawingArea;
 
 Launcher::Launcher() : selectIndex(0), needRedraw(true) {
-    tempCanvas.createSprite(240, 135);
+    drawingArea.width = 240;
+    drawingArea.height = 118;
+    drawingArea.xStart = 0;
+    drawingArea.yStart = 17;
+    tempCanvas.createSprite(240, 118);
 }
 
 Launcher::~Launcher() {
@@ -11,9 +16,9 @@ Launcher::~Launcher() {
 }
 
 void Launcher::onAppOpen() {
-    StatusBar::draw();
-    DrawingArea area = StatusBar::area;
-    tempCanvas.createSprite(area.width, area.height);
+    // StatusBar::draw();
+    // drawingArea = StatusBar::area;
+    // tempCanvas.createSprite(drawingArea.width, drawingArea.height);
     // Obtém todos os aplicativos do AppManager
     auto fetchedApps = AppManager::getInstance().listApps();
     for (auto& app : fetchedApps) {
@@ -34,7 +39,7 @@ void Launcher::onAppTick() {
     if (needRedraw) {
         // Utils::initCanvas();
         // StatusBar::draw(true);
-        tempCanvas.createSprite(240, 135);
+        tempCanvas.createSprite(drawingArea.width, drawingArea.height);
         tempCanvas.fillSprite(TFT_BLACK);
         if (apps.empty()) {
             tempCanvas.setTextSize(2);
@@ -47,15 +52,15 @@ void Launcher::onAppTick() {
 
         tempCanvas.setTextSize(2);
         tempCanvas.setTextColor(WHITE);
-        tempCanvas.drawCenterString(apps[selectIndex], 120, 110);
-        printf("Programa selecionado %s\n", apps[selectIndex].c_str());
+        tempCanvas.drawCenterString(apps[selectIndex], drawingArea.width / 2, 5);
+        // printf("Programa selecionado %s\n", apps[selectIndex].c_str());
         if (apps.size() > 1) {
-            tempCanvas.setCursor(10, 67);
+            tempCanvas.setCursor(10, drawingArea.height / 2);
             tempCanvas.print("<");
-            tempCanvas.drawRightString(">", 230, 67);
+            tempCanvas.drawRightString(">", 230, drawingArea.height / 2);
         }
-        int x = ((240 - 75) / 2);
-        int y2 = ((135 - 75) / 2);
+        int x = ((drawingArea.width - 75) / 2);
+        int y2 = ((drawingArea.height - 75) / 2);
 
         if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
             tempCanvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
@@ -94,12 +99,8 @@ void Launcher::draw() {
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         M5Canvas& canvas = ScreenManager::getCanvas();
 
-        canvas.fillSprite(TFT_BLACK);
+        tempCanvas.pushSprite(&canvas, drawingArea.xStart, drawingArea.yStart);
 
-        // Copia o conteúdo do canvas temporário para o canvas definitivo
-        tempCanvas.pushSprite(&canvas, 0, 0);
-
-        // Libera o semáforo após o uso
         xSemaphoreGive(canvasSemaphore);
         canvas.pushSprite(0, 0);
     }

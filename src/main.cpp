@@ -7,9 +7,9 @@
 #include "ScreenManager.h"
 #include "Utils.h"
 #include "apps/Calculadora/Calculadora.h"
-#include "apps/Keyboard/Keyboard.h"
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
+#include "services/Keyboard/Keyboard.h"
 
 SemaphoreHandle_t canvasSemaphore;
 
