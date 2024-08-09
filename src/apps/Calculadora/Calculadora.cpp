@@ -1,37 +1,44 @@
 #include "Calculadora.h"
 
-#include <M5Cardputer.h>
-
-#include "Globals.h"
 #include "ScreenManager.h"
 
-Calculadora::Calculadora() {
-    // Inicialização do aplicativo
+Calculadora::Calculadora() : tempCanvas(&M5.Lcd) {
+    tempCanvas.createSprite(240, 135);
 }
 
 Calculadora::~Calculadora() {
-    // Limpeza dos recursos
+    tempCanvas.deleteSprite();
 }
 
-void Calculadora::tick() {
+void Calculadora::onAppTick() {
     printf("Testando o programa");
     delay(1000);
     // Lógica de atualização do aplicativo
 }
 
-void Calculadora::draw() {
-    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
-        StatusBar::draw();
+void Calculadora::onAppOpen() {
+    M5Canvas& canvas = ScreenManager::getCanvas();
+}
 
-        // Adicione mais desenho aqui
+void Calculadora::onAppClose() {
+    // apps.clear();
+}
+
+void Calculadora::draw() {
+    tempCanvas.fillSprite(TFT_BLACK);  // Limpa o canvas temporário
+    tempCanvas.setTextSize(2);
+    tempCanvas.setTextColor(TFT_WHITE);
+    tempCanvas.setCursor(50, 67);
+    tempCanvas.print("Calculadora");
+
+    // Sincroniza a operação com o canvas definitivo usando o semáforo global
+    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         M5Canvas& canvas = ScreenManager::getCanvas();
 
-        // canvas.fillSprite(TFT_BLACK);  // Limpa o canvas
-        canvas.setTextSize(2);
-        canvas.setTextColor(TFT_WHITE);
-        canvas.setCursor(50, 67);
-        canvas.print("Calculadora");
-        canvas.pushSprite(0, 0);  // Desenha o canvas no display
+        // Copia o conteúdo do canvas temporário para o canvas definitivo
+        tempCanvas.pushSprite(&canvas, 0, 0);
+
+        // Libera o semáforo após o uso
         xSemaphoreGive(canvasSemaphore);
     }
 }

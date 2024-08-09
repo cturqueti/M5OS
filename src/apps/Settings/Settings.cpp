@@ -1,8 +1,5 @@
 #include "Settings.h"
 
-#include <M5Cardputer.h>
-
-#include "Globals.h"
 #include "ScreenManager.h"
 
 Settings::Settings() {
@@ -13,10 +10,18 @@ Settings::~Settings() {
     // Limpeza dos recursos
 }
 
-void Settings::tick() {
+void Settings::onAppTick() {
     printf("Testando o programa");
     delay(1000);
     // Lógica de atualização do aplicativo
+}
+
+void Settings::onAppOpen() {
+
+}
+
+void Settings::onAppClose() {
+    // apps.clear();
 }
 
 void Settings::draw() {

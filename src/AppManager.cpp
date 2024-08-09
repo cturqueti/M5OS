@@ -23,6 +23,7 @@ void AppManager::openApp(const String& appName) {
     startAppTask(appName);  // Inicia a tarefa do novo app
     currentAppName = appName;
     currentApp = getApp(appName);  // Atualiza o app atual
+    currentApp->onAppOpen();
 }
 
 void AppManager::closeApp(const String& appName) {
@@ -37,6 +38,7 @@ void AppManager::closeApp(const String& appName) {
 
 void AppManager::closeCurrentApp() {
     if (!currentAppName.isEmpty()) {
+        currentApp->onAppClose();
         closeApp(currentAppName);
     }
 }
@@ -51,7 +53,7 @@ void AppManager::startAppTask(const String& appName) {
                 // Atualiza o handle da tarefa no contexto da tarefa criada
                 app->setTaskHandle(xTaskGetCurrentTaskHandle());
                 while (true) {
-                    app->tick();                    // Chama a função de atualização do app
+                    app->onAppTick();               // Chama a função de atualização do app
                     vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
                 }
             },
@@ -78,7 +80,7 @@ String AppManager::getCurrentAppName() const {
 
 void AppManager::tickCurrentApp() {
     if (currentApp) {
-        currentApp->tick();  // Atualiza o aplicativo atual
+        currentApp->onAppTick();  // Atualiza o aplicativo atual
     }
 }
 

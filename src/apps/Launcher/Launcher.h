@@ -10,6 +10,7 @@
 #include "SD.h"
 #include "ScreenManager.h"
 #include "Utils.h"
+#include "Globals.h"
 
 class Launcher : public App {
    private:
@@ -23,7 +24,6 @@ class Launcher : public App {
     void onAppOpen() override;
     void onAppClose() override;
     void onAppTick() override;
-
     void draw() override;
 };
 

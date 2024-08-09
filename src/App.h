@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <M5Cardputer.h>
-#include <Task.h>  // Inclua o cabeçalho adequado para o tipo de TaskHandle_t
+#include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
 
 class App {
    public:
@@ -11,8 +11,10 @@ class App {
     virtual ~App();
     void begin();
 
-    virtual void tick() = 0;  // Função de atualização do aplicativo
-    virtual void draw() = 0;  // Função de desenho do aplicativo
+    virtual void onAppOpen() = 0;
+    virtual void onAppClose() = 0;
+    virtual void onAppTick() = 0;  // Função de atualização do aplicativo
+    virtual void draw() = 0;       // Função de desenho do aplicativo
 
     // Getters e Setters
     TaskHandle_t getTaskHandle() const;
