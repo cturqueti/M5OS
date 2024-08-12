@@ -60,14 +60,14 @@ void Launcher::onAppTick() {
             tempCanvas.drawRightString(">", 230, drawingArea.height / 2);
         }
         int x = ((drawingArea.width - 75) / 2);
-        int y2 = ((drawingArea.height - 75) / 2);
+        int y2 = ((drawingArea.height - 75 + 10) / 2);
 
         if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
             tempCanvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
                                AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
                                x, y2, 75, 75);
         } else {
-            // nop
+            canvas.drawPng(m5os, sizeof(m5os), x, y2, 75, 75);
         }
 
         needRedraw = false;
@@ -102,6 +102,5 @@ void Launcher::draw() {
         tempCanvas.pushSprite(&canvas, drawingArea.xStart, drawingArea.yStart);
 
         xSemaphoreGive(canvasSemaphore);
-        canvas.pushSprite(0, 0);
     }
 }

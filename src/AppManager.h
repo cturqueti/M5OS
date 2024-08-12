@@ -20,7 +20,6 @@ class AppManager {
     // Métodos para gerenciar aplicativos
     void addApp(const String& appName, App* app);
     void openApp(const String& appName);
-    void openBackgroundApp(const String& name);
     void closeApp(const String& appName);
     void closeCurrentApp();
     void startAppTask(const String& appName);
@@ -29,7 +28,6 @@ class AppManager {
     void tickCurrentApp();
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
-    void removeBackgroundApp(const String& name);
 
    private:
     AppManager();
@@ -37,12 +35,8 @@ class AppManager {
 
     std::map<String, App*> apps;  // Mapeia nomes de aplicativos para instâncias
     std::map<String, TaskHandle_t> appTasks;
-    std::vector<String> backgroundApps;
     String currentAppName;
     App* currentApp;
-
-    void runBackgroundTasks();
-    void drawBackgroundApps();
 
     // Não permite a cópia
     AppManager(const AppManager&) = delete;

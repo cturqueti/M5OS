@@ -16,9 +16,6 @@
 #include "icon.h"
 
 class Calculadora : public App {
-   private:
-    M5Canvas tempCanvas;
-
    public:
     Calculadora();
     virtual ~Calculadora();
@@ -30,6 +27,9 @@ class Calculadora : public App {
 
     const uint8_t* getIcon() override;
     size_t getIconSize() override;
+
+   private:
+    M5Canvas tempCanvas;
 };
 
 #endif  // CALCULADORA_H

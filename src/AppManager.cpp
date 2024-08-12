@@ -21,22 +21,20 @@ void AppManager::addApp(const String& appName, App* app) {
 void AppManager::openApp(const String& appName) {
     if (apps.find(appName) != apps.end()) {
         if (appTasks.find(appName) != appTasks.end()) {
+            printf("Aplicativo %s já está em execução\n", appName.c_str());
             return;
         }
+        printf("Adicionando App %s à task\n", appName.c_str());
         startAppTask(appName);
         currentAppName = appName;
-        currentApp = getApp(appName);  // Atualiza o app atual
-
+        currentApp = getApp(appName);
         if (currentApp) {
             currentApp->onAppOpen();
+        } else {
+            printf("Erro ao abrir o aplicativo %s: referência nula\n", appName.c_str());
         }
-    }
-}
-
-void AppManager::openBackgroundApp(const String& name) {
-    if (apps.find(name) != apps.end()) {
-        backgroundApps.push_back(name);
-        startAppTask(name);
+    } else {
+        printf("Aplicativo %s não encontrado\n", appName.c_str());
     }
 }
 
@@ -59,9 +57,10 @@ void AppManager::closeCurrentApp() {
         if (currentApp) {
             currentApp->onAppClose();
         }
-        closeApp(currentAppName);
+        String appName = currentAppName;  // Salva o nome antes de limpar
         currentAppName = "";
         currentApp = nullptr;
+        closeApp(appName);  // Chama o closeApp
     }
 }
 
@@ -73,6 +72,7 @@ void AppManager::startAppTask(const String& appName) {
 
     App* app = getApp(appName);
     if (app) {
+        TaskHandle_t taskHandle = nullptr;
         xTaskCreatePinnedToCore(
             [](void* param) {
                 App* app = static_cast<App*>(param);
@@ -83,14 +83,18 @@ void AppManager::startAppTask(const String& appName) {
                 }
             },
             appName.c_str(),
-            8192,     // Tamanho da stack
-            app,      // Parâmetro passado para a função
-            1,        // Prioridade
-            nullptr,  // Handle da tarefa
-            coreId);  // Executar no Core 1
+            8192,         // Tamanho da stack
+            app,          // Parâmetro passado para a função
+            1,            // Prioridade
+            &taskHandle,  // Handle da tarefa
+            coreId);      // Executar no Core 1
 
         // Armazena o handle da tarefa
-        appTasks[appName] = xTaskGetCurrentTaskHandle();
+        if (taskHandle) {
+            appTasks[appName] = taskHandle;  // Armazena o handle apenas se a tarefa foi criada
+        } else {
+            printf("Falha ao criar a task para %s\n", appName.c_str());
+        }
     }
 }
 
@@ -110,14 +114,12 @@ void AppManager::tickCurrentApp() {
     if (currentApp) {
         currentApp->onAppTick();  // Atualiza o aplicativo atual
     }
-    runBackgroundTasks();
 }
 
 void AppManager::draw() {
     if (currentApp) {
         currentApp->draw();  // Desenha o aplicativo atual
     }
-    drawBackgroundApps();
 }
 
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {
@@ -126,30 +128,4 @@ std::vector<std::pair<std::string, App*>> AppManager::listApps() {
         appsList.push_back(std::make_pair(app.first.c_str(), app.second));
     }
     return appsList;
-}
-
-void AppManager::removeBackgroundApp(const String& name) {
-    auto it = std::find(backgroundApps.begin(), backgroundApps.end(), name);
-    if (it != backgroundApps.end()) {
-        backgroundApps.erase(it);
-        closeApp(name);  // Feche a tarefa do aplicativo
-    }
-}
-
-void AppManager::runBackgroundTasks() {
-    for (const auto& appName : backgroundApps) {
-        App* app = getApp(appName);
-        if (app) {
-            app->onAppTick();  // Atualize o aplicativo de segundo plano
-        }
-    }
-}
-
-void AppManager::drawBackgroundApps() {
-    for (const auto& appName : backgroundApps) {
-        App* app = getApp(appName);
-        if (app) {
-            app->draw();  // Desenha o aplicativo em segundo plano
-        }
-    }
 }

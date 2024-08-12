@@ -6,6 +6,9 @@
 #include "Globals.h"
 #include "M5Cardputer.h"
 #include "M5GFX.h"
+#include "services/Keyboard/Keyboard.h"
+
+// #include "services/Wifi/WifiDisconnected.h"
 
 extern M5Canvas canvas;
 

@@ -18,7 +18,7 @@ void Calculadora::onAppTick() {
 
 void Calculadora::onAppOpen() {
     printf("Iniciando Calculadora...\n");
-    printf("Tamanho do ícone: %zu\n", getIconSize());
+    // printf("Tamanho do ícone: %zu\n", getIconSize());
 
     const uint8_t* icon = getIcon();
     if (icon) {
@@ -56,7 +56,6 @@ void Calculadora::draw() {
 
         // Libera o semáforo após o uso
         xSemaphoreGive(canvasSemaphore);
-        canvas.pushSprite(0, 0);
     }
 }
 
