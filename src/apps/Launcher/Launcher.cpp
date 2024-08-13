@@ -93,6 +93,8 @@ void Launcher::onAppTick() {
             // AppManager::getInstance().closeApp("Launcher");
         }
     }
+    delay(1000);
+    AppManager::getInstance().openApp("Calculadora");
 }
 
 void Launcher::draw() {

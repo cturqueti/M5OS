@@ -14,17 +14,26 @@ void Calculadora::onAppTick() {
     // printf("Testando o programa");
     // delay(1000);
     //  Lógica de atualização do aplicativo
-    if (Keyboard::getInstance().commandIsChange() && AppManager::getInstance().getCurrentAppName() == "Calculadora") {
-        String command = Keyboard::getInstance().getCommand();
+    Keyboard& keyboard = Keyboard::getInstance();
+
+    if (keyboard.commandIsChange() && AppManager::getInstance().getCurrentAppName() == "Calculadora") {
+        String command = keyboard.getCommand();
         printf("Comando recebido pela calculadora: ");
         if (command == "EXIT") {
             printf("Fechando app atual\n");
-            AppManager::getInstance().closeCurrentApp();
+            exit = true;
+            delay(500);
         }
         if (command == "ENTER") {
             printf("Comando Enter\n");
         }
     }
+    if (exit) {
+        // AppManager::getInstance().openApp("Launcher");
+        AppManager::getInstance().closeCurrentApp();
+    }
+    delay(1000);
+    exit = true;
 }
 
 void Calculadora::onAppOpen() {

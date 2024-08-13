@@ -30,6 +30,7 @@ class Calculadora : public App {
 
    private:
     M5Canvas tempCanvas;
+    bool exit = false;
 };
 
 #endif  // CALCULADORA_H

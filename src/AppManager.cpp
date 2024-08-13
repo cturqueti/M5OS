@@ -46,12 +46,12 @@ void AppManager::closeApp(const String& appName) {
     if (it != appTasks.end()) {
         // Verifica o identificador da tarefa
         TaskHandle_t taskHandle = it->second;
-        printf("Task handle para %s é %p\n", appName.c_str(), taskHandle);  // Imprime o valor do handle
+        printf("Fechando a task para o aplicativo %s\n", appName.c_str());
 
         if (taskHandle) {
             // Tenta excluir a tarefa
+            printf("Encerrando: ");
             vTaskDelete(taskHandle);
-            delay(1000);
             printf("Task %s excluída com sucesso\n", appName.c_str());
         } else {
             printf("Task handle para %s é nulo\n", appName.c_str());
@@ -90,13 +90,22 @@ void AppManager::closeCurrentApp() {
 
         // Atualiza o aplicativo no topo, se necessário
         if (!appTasks.empty()) {
-            auto it = appTasks.begin();
+                        auto it = appTasks.begin();
             currentAppName = it->first;
             currentApp = getApp(currentAppName);
             if (currentApp) {
                 currentApp->onAppOpen();
             }
         }
+    }
+}
+
+void AppManager::switchToApp(const String& appName) {
+    if (apps.find(appName) != apps.end()) {
+        // closeCurrentApp();
+        openApp(appName);
+    } else {
+        printf("Aplicativo %s não encontrado para troca\n", appName.c_str());
     }
 }
 
@@ -128,7 +137,7 @@ void AppManager::startAppTask(const String& appName) {
         // Armazena o handle da tarefa
         if (taskHandle) {
             printf("Task %s criada com sucesso, ponteiro: %p\n", appName.c_str(), taskHandle);
-            appTasks[appName] = taskHandle;  // Armazena o handle apenas se a tarefa foi criada
+            appTasks[appName] = taskHandle;
         } else {
             printf("Falha ao criar a task para %s\n", appName.c_str());
         }

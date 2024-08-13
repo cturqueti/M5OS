@@ -19,7 +19,6 @@ class App {
     // Getters e Setters
     TaskHandle_t getTaskHandle() const;
     void setTaskHandle(TaskHandle_t handle);
-    volatile bool taskShouldExit;  // Flag para sinalizar a saída da tarefa
 
     virtual const uint8_t* getIcon() {
         return nullptr;
@@ -28,7 +27,7 @@ class App {
         return 0;
     };
 
-   protected:
+   private:
     TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
 };
 

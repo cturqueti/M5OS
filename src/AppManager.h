@@ -27,6 +27,7 @@ class AppManager {
     void startAppTask(const String& appName);
     App* getApp(const String& appName);
     String getCurrentAppName() const;
+    void switchToApp(const String& appName);
     void tickCurrentApp();
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
