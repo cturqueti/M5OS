@@ -24,6 +24,7 @@
 #define KEY_DOWN '.'
 #define KEY_LEFT ','
 #define KEY_RIGHT '/'
+#define KEY_ESC '`'
 
 class Keyboard : public Service {
    public:
@@ -41,11 +42,13 @@ class Keyboard : public Service {
     size_t getIconSize() override;
 
     bool haveInput();
+    static bool commandIsChange();
+    static String getCommand();
     String getInput(bool clearInput);
     String getCurrentInput();
 
     bool exitBtn = false;
-
+    static String command;
     static int ctrlBtn;
 
    private:
@@ -64,8 +67,11 @@ class Keyboard : public Service {
     static Keyboard_Class::KeysState statusHold;
     static bool isPressedHold;
     static String currentInput;
+
+    static String _lastCommand;
+
     unsigned long lastKeyPressMillis = 0;
-    const unsigned long debounceDelay = 130;
+    const unsigned long debounceDelay = 100;
     bool haveInputFlag = false;
 };
 

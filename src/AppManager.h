@@ -2,6 +2,8 @@
 #define APP_MANAGER_H
 
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <map>
 #include <utility>
@@ -28,6 +30,10 @@ class AppManager {
     void tickCurrentApp();
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
+
+    std::vector<String> listOpenApps() const;
+
+    void printDebugInfo();
 
    private:
     AppManager();

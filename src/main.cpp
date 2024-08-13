@@ -93,11 +93,11 @@ void setup() {
 void loop() {
     AppManager& appManager = AppManager::getInstance();
 
-    // Atualiza e desenha o aplicativo atual
+    // appManager.printDebugInfo();
 
     appManager.draw();
     canvas.pushSprite(0, 0);
     // printf("Memória livre: %d bytes\n", ESP.getFreeHeap());
 
-    delay(200);  // Pequeno delay para reduzir o uso da CPU
+    delay(1000);  // Pequeno delay para reduzir o uso da CPU
 }

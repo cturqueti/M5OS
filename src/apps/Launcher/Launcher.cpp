@@ -72,25 +72,25 @@ void Launcher::onAppTick() {
 
         needRedraw = false;
     }
-    M5Cardputer.update();
-    if (M5Cardputer.Keyboard.isChange() && !apps.empty()) {
-        Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
-        if (M5Cardputer.Keyboard.isKeyPressed('/')) {
+    if (Keyboard::getInstance().commandIsChange() && !apps.empty() && AppManager::getInstance().getCurrentAppName() == "Launcher") {
+        String command = Keyboard::getInstance().getCommand();
+        if (command == "LEFT") {
             selectIndex++;
             if (selectIndex >= apps.size()) {
                 selectIndex = 0;
             }
             needRedraw = true;
         }
-        if (M5Cardputer.Keyboard.isKeyPressed(',')) {
+        if (command == "RIGHT") {
             selectIndex--;
             if (selectIndex < 0) {
                 selectIndex = apps.size() - 1;
             }
             needRedraw = true;
         }
-        if (status.enter) {
+        if (command == "ENTER") {
             AppManager::getInstance().openApp(apps[selectIndex].c_str());
+            // AppManager::getInstance().closeApp("Launcher");
         }
     }
 }

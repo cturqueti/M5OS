@@ -4,6 +4,8 @@ int Keyboard::ctrlBtn = 0;
 bool Keyboard::showInputFlag = false;  // Inicialize os membros estáticos
 bool Keyboard::isPressedHold = false;
 String Keyboard::currentInput = "";
+String Keyboard::command = "";
+String Keyboard::_lastCommand = "";
 Keyboard_Class::KeysState Keyboard::statusHold;
 
 Keyboard::Keyboard() : inputText(""), tempCanvas(&M5.Lcd) {
@@ -31,11 +33,18 @@ void Keyboard::onServiceClose() {
 
 void Keyboard::onServiceTick() {
     // Lida com a entrada do usuário
-    // printf("KeyboardLigado");
     M5Cardputer.update();
-    if (M5Cardputer.Keyboard.isPressed()) {
-        printf("Pressionado algo\n");
-        // handleInput();
+
+    if (M5Cardputer.Keyboard.isChange()) {
+        handleInput();
+    }
+    if (M5.BtnA.isPressed()) {
+        if (shouldProcessKey()) {
+            exitBtn = true;
+            command = "EXIT";
+            // printf("Pressionado exit\n");
+            lastKeyPressMillis = millis();
+        }
     }
 }
 
@@ -60,35 +69,81 @@ bool Keyboard::shouldProcessKey() {
 }
 
 void Keyboard::handleInput() {
-    if (M5Cardputer.Keyboard.isChange()) {
-        printf("Pressionado algo");
+    if (M5Cardputer.Keyboard.isPressed()) {
+        // printf("Pressionado algo\n");
         Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
         if (status.fn) {
             statusHold.fn = !statusHold.fn;
+            printf("Fn: %d\n", statusHold.fn);
             StatusBar::draw();
         } else if (status.shift) {
             statusHold.shift = !statusHold.shift;
+            M5Cardputer.Keyboard.setCapsLocked(statusHold.shift);
+            printf("Shift: %d\n", statusHold.shift);
             StatusBar::draw();
         } else if (status.opt) {
+            printf("OPT: %d\n", statusHold.opt);
             statusHold.opt = !statusHold.opt;
             StatusBar::draw();
         } else if (status.del && currentInput.length() > 0) {
-            currentInput.remove(currentInput.length() - 1);
-            lastKeyPressMillis = millis();
+            if (shouldProcessKey()) {
+                lastKeyPressMillis = millis();
+                currentInput.remove(currentInput.length() - 1);
+
+                printf("Entrada atual: %s\n", currentInput.c_str());
+            }
         } else if (status.enter) {
-            input = currentInput;
-            currentInput.clear();
+            if (shouldProcessKey()) {
+                input = currentInput;
+                currentInput.clear();
+                command = "ENTER";
+
+                lastKeyPressMillis = millis();
+            }
+        } else if (status.ctrl) {
+            command.clear();
+            if (shouldProcessKey()) {
+                for (auto i : status.word) {
+                    command = i;
+                }
+
+                lastKeyPressMillis = millis();
+                printf("Ctrl + %s\n", command.c_str());
+            }
+        } else if (status.tab) {
+            // Calcula quantos espaços adicionar para alinhar a 4 caracteres
+            int spacesToAdd = 4 - (currentInput.length() % 4);
+            for (int i = 0; i < spacesToAdd; i++) {
+                currentInput += ' ';
+            }
+            lastKeyPressMillis = millis();
+        } else if (statusHold.fn) {
+            if (shouldProcessKey()) {
+                for (auto i : status.word) {
+                    if (i == KEY_UP) {
+                        command = "UP";
+                    } else if (i == KEY_DOWN) {
+                        command = "DOWN";
+                    } else if (i == KEY_LEFT) {
+                        command = "LEFT";
+                    } else if (i == KEY_RIGHT) {
+                        command = "RIGHT";
+                    } else if (i == KEY_ESC) {
+                        command = "ESC";
+                    }
+                }
+                printf("KEY: %s\n", command.c_str());
+                lastKeyPressMillis = millis();
+            }
         } else {
             if (shouldProcessKey()) {
+                lastKeyPressMillis = millis();
                 for (auto i : status.word) {
                     currentInput += i;
                 }
-                lastKeyPressMillis = millis();
             }
+            printf("Entrada atual: %s\n", currentInput.c_str());
         }
-    } else if (M5.BtnA.isPressed()) {
-        exitBtn = true;
-        printf("Pressionado exit");
     }
 }
 
@@ -143,4 +198,20 @@ String Keyboard::getInput(bool clearInput) {
 
 String Keyboard::getCurrentInput() {
     return currentInput;
+}
+
+bool Keyboard::commandIsChange() {
+    if (command.length() > 0) {
+        // printf("Verificado se há comando");
+        return true;
+    } else {
+        return false;
+    }
+}
+
+String Keyboard::getCommand() {
+    String i = command;
+    printf("Efetuado a leitura do comando: %s\n", i);
+    command.clear();
+    return i;
 }

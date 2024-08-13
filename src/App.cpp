@@ -2,7 +2,7 @@
 
 #include "ScreenManager.h"  // Assumindo que o ScreenManager tem a definição do canvas
 
-App::App() : taskHandle(nullptr) {}
+App::App() : taskHandle(nullptr), taskShouldExit(false) {}
 
 App::~App() {
     // Se não houver nada específico a ser feito no destrutor, você pode deixá-lo vazio
