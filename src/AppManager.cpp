@@ -8,7 +8,8 @@ static const char* TAG = "AppManager";
 
 std::vector<TaskInfo> AppManager::taskTable;
 
-AppManager::AppManager() : currentAppName(""), currentApp(nullptr), core0Tasks(0), core1Tasks(0) {}
+AppManager::AppManager() : currentAppName(""), currentApp(nullptr), core0Tasks(0), core1Tasks(0) {
+}
 
 AppManager::~AppManager() {
     closeCurrentApp();

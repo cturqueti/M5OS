@@ -14,6 +14,8 @@
 #include "apps/Settings/Settings.h"
 // #include "services/Keyboard/Keyboard.h"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+
 void setup() {
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set("AppManager", ESP_LOG_INFO);
