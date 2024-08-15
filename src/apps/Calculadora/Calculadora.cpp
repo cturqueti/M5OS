@@ -10,18 +10,10 @@ Calculadora::Calculadora() : priority(2) {
 Calculadora::~Calculadora() {
 }
 
-void Calculadora::onAppTick() {
-    nloop -= 1;
-    // ESP_LOGI(TAG, "Fazendo algo na calculadora");
-    if (nloop < 1) {
-        ESP_LOGI(TAG, "Fechando Launcher");
-        AppManager::getInstance().closeApp("Calculadora");
-    }
-}
-
 void Calculadora::onAppOpen() {
-    ESP_LOGI(TAG, "Iniciando Calculadora");
     nloop = 800;
+
+    ESP_LOGI(TAG, "Iniciando delay de 800");
 
     const uint8_t* icon = getIcon();
     if (icon) {
@@ -31,7 +23,20 @@ void Calculadora::onAppOpen() {
     }
 }
 
+void Calculadora::onAppTick() {
+    nloop -= 1;
+    if (nloop % 10 == 0) {
+        ESP_LOGI(TAG, "Rodando");
+    }
+    if (nloop < 1) {
+        AppManager::getInstance().closeApp("Calculadora");
+    }
+}
+
 void Calculadora::onAppClose() {
+    ESP_LOGI(TAG, "Fechando Calculadora");
+    nloop = 800;
+    ESP_LOGI(TAG, "Abrindo Launcher");
     AppManager::getInstance().openApp("Launcher");
 }
 

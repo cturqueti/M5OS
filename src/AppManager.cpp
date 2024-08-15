@@ -6,6 +6,8 @@
 
 static const char* TAG = "AppManager";
 
+std::vector<TaskInfo> AppManager::taskTable;
+
 AppManager::AppManager() : currentAppName(""), currentApp(nullptr), core0Tasks(0), core1Tasks(0) {}
 
 AppManager::~AppManager() {
@@ -25,7 +27,6 @@ void AppManager::addApp(const std::string& appName, App* app) {
 void AppManager::openApp(const std::string& appName) {
     if (apps.find(appName) != apps.end()) {
         if (findTaskByName(appName)) {
-            // if (appTasks.find(appName) != appTasks.end()) {
             ESP_LOGW(TAG, "Aplicativo %s já está em execução", appName.c_str());
             return;
         }
@@ -34,9 +35,6 @@ void AppManager::openApp(const std::string& appName) {
         currentApp = getApp(appName);
 
         if (currentApp) {
-            // Primeiro, chama onAppOpen
-            currentApp->onAppOpen();
-
             // Depois, inicia a task do aplicativo
             ESP_LOGD(TAG, "Adicionando App %s à task", appName.c_str());
             startAppTask(appName);
@@ -53,31 +51,18 @@ void AppManager::closeApp(const std::string& appName) {
 
     App* app = getApp(appName);
     if (app) {
-        if (findTaskByName(appName)) {
-            ESP_LOGI(TAG, "Removendo o aplicativo %s do mapa", appName.c_str());
-            if (removeTaskByName(appName)) {
-                ESP_LOGI(TAG, "Aplicativo %s removido com sucesso", appName.c_str());
-            } else {
-                ESP_LOGI(TAG, "Aplicativo %s não encontrado no mapa", appName.c_str());
-            }
-        }
-
-        printDebugInfo();
-
         TaskHandle_t taskHandle = app->getTaskHandle();
-        ESP_LOGI(TAG, "Fechando a task para o aplicativo %s", appName.c_str());
-        if (app) {
-            app->onAppClose();
-        }
+        ESP_LOGI(TAG, "Fechando a task para o aplicativo %s, ponteiro %p", appName.c_str(), taskHandle);
 
         vTaskDelay(pdMS_TO_TICKS(10));
         if (taskHandle) {
+            app->onAppClose();
+            app->setTaskHandle(nullptr);  // Limpa o handle após excluir
+            removeTaskByName(appName);
             // Tenta excluir a tarefa
             vTaskDelete(taskHandle);
             ESP_LOGI(TAG, "Task %s excluída com sucesso", appName.c_str());
-            app->setTaskHandle(nullptr);  // Limpa o handle após excluir
 
-            removeTaskByName(appName);
         } else {
             ESP_LOGI(TAG, "Task handle para %s é nulo", appName.c_str());
         }
@@ -116,14 +101,15 @@ void AppManager::switchToApp(const std::string& appName) {
     }
 }
 
-void taskFunction(void* pvParameters) {
+void taskAppFunction(void* pvParameters) {
     App* app = static_cast<App*>(pvParameters);
     app->setTaskHandle(xTaskGetCurrentTaskHandle());
 
-    ESP_LOGV(TAG, "Iniciando loop da task para: %s", app->getAppName().c_str());
+    ESP_LOGV(TAG, "Iniciando loop da task para: %s, ponteiro: %p", app->getAppName().c_str(), app->getTaskHandle());
 
     while (true) {
         app->onAppTick();  // Chama a função de atualização do app
+        app->draw();
         // ESP_LOGV(TAG, "Tick: %s", app->getAppName().c_str());
         vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
     }
@@ -138,7 +124,7 @@ void AppManager::startAppTask(const std::string& appName) {
     if (app) {
         TaskHandle_t taskHandle = nullptr;
         xTaskCreatePinnedToCore(
-            taskFunction,
+            taskAppFunction,
             appName.c_str(),
             8192,                // Tamanho da stack
             app,                 // Parâmetro passado para a função
@@ -159,6 +145,7 @@ void AppManager::startAppTask(const std::string& appName) {
             taskInfo.priority = app->appPriority();  // A prioridade pode ser ajustada conforme necessário
             taskInfo.coreId = coreId;
             taskTable.push_back(taskInfo);
+            app->onAppOpen();
         } else {
             ESP_LOGE(TAG, "Falha ao criar a task para %s", appName.c_str());
         }
@@ -175,18 +162,6 @@ App* AppManager::getApp(const std::string& appName) {
 
 std::string AppManager::getCurrentAppName() const {
     return currentAppName;
-}
-
-void AppManager::tickCurrentApp() {
-    if (currentApp) {
-        currentApp->onAppTick();  // Atualiza o aplicativo atual
-    }
-}
-
-void AppManager::draw() {
-    if (currentApp) {
-        currentApp->draw();  // Desenha o aplicativo atual
-    }
 }
 
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {

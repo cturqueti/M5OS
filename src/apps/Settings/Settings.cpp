@@ -11,12 +11,18 @@ Settings::~Settings() {
 }
 
 void Settings::onAppTick() {
-    printf("Testando o programa");
-    delay(1000);
-    // Lógica de atualização do aplicativo
+    if (millis() - lastMillis > delay_t) {
+        printf("Testando o programa\n");
+        lastMillis = millis();
+    }
+
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    //  Lógica de atualização do aplicativo
 }
 
 void Settings::onAppOpen() {
+    delay_t = 1000;
+    lastMillis = millis();
 }
 
 void Settings::onAppClose() {

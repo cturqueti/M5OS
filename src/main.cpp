@@ -12,11 +12,13 @@
 #include "apps/Calculadora/Calculadora.h"
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
-#include "services/Keyboard/Keyboard.h"
+// #include "services/Keyboard/Keyboard.h"
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set("AppManager", ESP_LOG_INFO);
+    ServicesManager& serviceManager = ServicesManager::getInstance();
+
     AppManager& appManager = AppManager::getInstance();
 
     // Adiciona aplicativos ao AppManager
@@ -31,6 +33,6 @@ void setup() {
 }
 
 void loop() {
-    AppManager::getInstance().printDebugInfo();
+    // AppManager::getInstance().printDebugInfo();
     delay(2000);  // Pequeno delay para reduzir o uso da CPU
 }

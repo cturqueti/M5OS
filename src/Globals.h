@@ -10,6 +10,5 @@
 #include "Utils.h"
 
 extern SemaphoreHandle_t canvasSemaphore;
-extern std::vector<TaskInfo> taskTable;
 
 #endif  // GLOBALS_H

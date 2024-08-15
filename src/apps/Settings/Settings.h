@@ -26,6 +26,8 @@ class Settings : public App {
     size_t getIconSize() override;
 
    private:
+    uint64_t delay_t = 1000;
+    uint64_t lastMillis = 0;
 };
 
 #endif  // SETTINGS_H

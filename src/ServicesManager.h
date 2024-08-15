@@ -9,12 +9,9 @@
 #include <vector>
 
 #include "Service.h"
+#include "Utils.h"
 
-struct TaskInfo {
-    std::string serviceName;
-    UBaseType_t priority;
-    uint8_t coreId;
-};
+#pragma once
 
 class ServicesManager {
    public:
@@ -26,8 +23,7 @@ class ServicesManager {
     void addService(const std::string& serviceName, Service* service);
     void openService(const std::string& name);
     void removeService(const std::string& name);
-    void tickServices();
-    void drawServices();
+    void removeCurrentService();
 
     void startServiceTask(const std::string& appName);
     Service* getService(const std::string& serviceName);
@@ -38,7 +34,7 @@ class ServicesManager {
     void printDebugInfo();
 
    private:
-    ServicesManager() {}
+    ServicesManager();
     ~ServicesManager();
 
     TaskInfo* findTaskByName(const std::string& name);
@@ -49,7 +45,7 @@ class ServicesManager {
     UBaseType_t core1Tasks = 0;
 
     std::map<std::string, Service*> services;  // Mapeia nomes de serviços para instâncias
-    std::vector<TaskInfo> taskTable;
+    static std::vector<TaskInfo> taskTable;
     std::string currentServiceName;
     Service* currentService;
 

@@ -27,9 +27,10 @@ class App {
     virtual size_t getIconSize() { return 0; };
 
    private:
+    TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
     uint8_t priority;
     bool isRunning;
-    static TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
+
     std::string appName;
 };
 

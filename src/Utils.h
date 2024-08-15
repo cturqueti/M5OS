@@ -10,6 +10,12 @@
 #define KEY_LEFT ','
 #define KEY_RIGHT '/'
 
+struct TaskInfo {
+    std::string appName;
+    UBaseType_t priority;
+    uint8_t coreId;
+};
+
 class Utils {
    public:
     // initialize the canvas

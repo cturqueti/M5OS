@@ -2,14 +2,13 @@
 #define SERVICE_H
 
 #include <Arduino.h>
-#include <M5Cardputer.h>
+// #include <M5Cardputer.h>
 #include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
 
 class Service {
    public:
     Service();
     virtual ~Service();
-    void begin();
 
     // Métodos virtuais puros que precisam ser implementados por classes derivadas
     virtual void onServiceOpen() = 0;
@@ -17,19 +16,20 @@ class Service {
     virtual void onServiceTick() = 0;
     virtual void draw() = 0;  // Função de desenho do serviço
 
-    // Getters e Setters
-    TaskHandle_t getTaskHandle() const;
-    void setTaskHandle(TaskHandle_t handle);
+    inline TaskHandle_t getTaskHandle() const { return taskHandle; };
+    inline void setTaskHandle(TaskHandle_t handle) { taskHandle = handle; };
+    inline bool isTaskRunning() const { return isRunning; };
 
-    virtual const uint8_t* getIcon() {
-        return nullptr;
-    };
-    virtual size_t getIconSize() {
-        return 0;
-    };
+    inline std::string getServiceName() const { return serviceName; }
+    inline void setServiceName(const std::string& name) { serviceName = name; }
+
+    virtual int servicePriority() const { return priority; }  // Pode ser sobrescrito
 
    protected:
-    TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
+    uint8_t priority;
+    bool isRunning;
+    static TaskHandle_t taskHandle;
+    std::string serviceName;
 };
 
 #endif  // APP_H

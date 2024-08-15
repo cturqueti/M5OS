@@ -9,12 +9,9 @@
 #include <vector>
 
 #include "App.h"
+#include "Utils.h"
 
-struct TaskInfo {
-    std::string appName;
-    UBaseType_t priority;
-    uint8_t coreId;
-};
+#pragma once
 
 class AppManager {
    public:
@@ -33,8 +30,8 @@ class AppManager {
     App* getApp(const std::string& appName);
     std::string getCurrentAppName() const;
     void switchToApp(const std::string& appName);
-    void tickCurrentApp();
-    void draw();
+    // void tickCurrentApp();
+    // void draw();
     std::vector<std::pair<std::string, App*>> listApps();
 
     void printDebugInfo();
@@ -51,7 +48,7 @@ class AppManager {
     UBaseType_t core1Tasks = 0;
 
     std::map<std::string, App*> apps;  // Mapeia nomes de aplicativos para instâncias
-    std::vector<TaskInfo> taskTable;
+    static std::vector<TaskInfo> taskTable;
     std::string currentAppName;
     App* currentApp;
 

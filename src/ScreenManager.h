@@ -4,13 +4,13 @@
 #pragma once
 
 #include "Globals.h"
-#include "M5Cardputer.h"
-#include "M5GFX.h"
-#include "services/Keyboard/Keyboard.h"
+// #include "M5Cardputer.h"
+// #include "M5GFX.h"
+// #include "services/Keyboard/Keyboard.h"
 
 // #include "services/Wifi/WifiDisconnected.h"
 
-extern M5Canvas canvas;
+// extern M5Canvas canvas;
 
 struct DrawingArea {
     int xStart;  // Posição x inicial para desenho
@@ -21,18 +21,18 @@ struct DrawingArea {
 
 class StatusBar {
    private:
-    static M5Canvas tempCanvas;
+    // static M5Canvas tempCanvas;
 
    public:
     StatusBar();
     ~StatusBar();
-    static void draw(bool force = false);
-    static DrawingArea area;
+    // static void draw(bool force = false);
+    // static DrawingArea area;
 };
 
 class ScreenManager {
    public:
-    static M5Canvas& getCanvas();  // Retorna uma referência ao canvas
+    //     static M5Canvas& getCanvas();  // Retorna uma referência ao canvas
 };
 
 #endif  // SCREENMANAGER_H

@@ -29,7 +29,7 @@
 class Keyboard : public Service {
    public:
     Keyboard();
-    virtual ~Keyboard();
+    ~Keyboard();
     static Keyboard& getInstance();
     virtual void onServiceOpen() override;
     virtual void onServiceClose() override;
@@ -38,8 +38,8 @@ class Keyboard : public Service {
     void showInput(bool enable);
     String input = "";
 
-    const uint8_t* getIcon() override;
-    size_t getIconSize() override;
+    // const uint8_t* getIcon() override;
+    // size_t getIconSize() override;
 
     bool haveInput();
     static bool commandIsChange();
