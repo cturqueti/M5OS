@@ -1,24 +1,28 @@
 #include "ServicesManager.h"
 
-#include <M5Cardputer.h>
 #include <SD.h>
 
+#include "esp_log.h"
+
+static const char* TAG = "ServiceManager";
+
+ServicesManager::ServicesManager() : currentServiceName(""), currentService(nullptr), core0Tasks(0), core1Tasks(0) {}
+
 ServicesManager::~ServicesManager() {
-    for (auto& service : serviceTasks) {
-        vTaskDelete(service.second);  // Libera a task
-    }
+    closeCurrentService();
     for (auto& service : services) {
         delete service.second;  // Libera memória dos serviços
     }
 }
 
-void ServicesManager::addService(const String& serviceName, Service* service) {
+void ServicesManager::addService(const std::string& serviceName, Service* service) {
     if (services.find(serviceName) == services.end()) {
         services[serviceName] = service;
+        ESP_LOGD(TAG, "Service %s adicionado", appName.c_str());
     }
 }
 
-void ServicesManager::openService(const String& serviceName) {
+void ServicesManager::openService(const std::string& serviceName) {
     if (services.find(serviceName) != services.end()) {
         if (serviceTasks.find(serviceName) != serviceTasks.end()) {
             printf("Aplicativo %s já está em execução\n", serviceName.c_str());
@@ -38,7 +42,7 @@ void ServicesManager::openService(const String& serviceName) {
     }
 }
 
-void ServicesManager::removeService(const String& serviceName) {
+void ServicesManager::removeService(const std::string& serviceName) {
     auto it = serviceTasks.find(serviceName);
     if (it != serviceTasks.end()) {
         vTaskDelete(it->second);
@@ -75,7 +79,7 @@ void ServicesManager::drawServices() {
     }
 }
 
-void ServicesManager::startServiceTask(const String& serviceName) {
+void ServicesManager::startServiceTask(const std::string& serviceName) {
     if (serviceName.isEmpty() || services.find(serviceName) == services.end()) {
         printf("Nome do serviço inválido ou serviço não encontrado\n");
         return;

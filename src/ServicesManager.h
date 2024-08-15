@@ -3,11 +3,18 @@
 
 #include <Arduino.h>
 
+#include <algorithm>
 #include <map>
-#include <string>
+#include <utility>
 #include <vector>
 
 #include "Service.h"
+
+struct TaskInfo {
+    std::string serviceName;
+    UBaseType_t priority;
+    uint8_t coreId;
+};
 
 class ServicesManager {
    public:
@@ -16,21 +23,35 @@ class ServicesManager {
         return instance;
     }
 
-    void addService(const String& serviceName, Service* service);
-    void openService(const String& name);
-    void removeService(const String& name);
+    void addService(const std::string& serviceName, Service* service);
+    void openService(const std::string& name);
+    void removeService(const std::string& name);
     void tickServices();
     void drawServices();
+
+    void startServiceTask(const std::string& appName);
+    Service* getService(const std::string& serviceName);
+    std::string getCurrentServiceName() const;
+    void switchToService(const std::string& appName);
+    std::vector<std::pair<std::string, Service*>> listServices();
+
+    void printDebugInfo();
 
    private:
     ServicesManager() {}
     ~ServicesManager();
 
-    std::map<String, Service*> services;  // Mapeia nomes de serviços para instâncias
-    std::vector<String> runningServices;
-    std::map<String, TaskHandle_t> serviceTasks;
+    TaskInfo* findTaskByName(const std::string& name);
+    bool removeTaskByName(const std::string& name);
+    void countTasksPerCore(const std::vector<TaskInfo>& taskTable);
 
-    void startServiceTask(const String& serviceName);
+    UBaseType_t core0Tasks = 0;
+    UBaseType_t core1Tasks = 0;
+
+    std::map<std::string, Service*> services;  // Mapeia nomes de serviços para instâncias
+    std::vector<TaskInfo> taskTable;
+    std::string currentServiceName;
+    Service* currentService;
 
     // Não permite a cópia
     ServicesManager(const ServicesManager&) = delete;

@@ -10,17 +10,12 @@
 #define KEY_LEFT ','
 #define KEY_RIGHT '/'
 
-
 class Utils {
    public:
-
     // initialize the canvas
-    static void initCanvas();
-
-
+    // static void initCanvas();
 
    private:
-    
 };
 
 #endif  // UTILS_H

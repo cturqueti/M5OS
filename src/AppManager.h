@@ -37,11 +37,7 @@ class AppManager {
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
 
-    std::vector<std::string> listOpenApps() const;
-
     void printDebugInfo();
-
-    void printTaskTable();
 
    private:
     AppManager();

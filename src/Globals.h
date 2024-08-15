@@ -5,6 +5,11 @@
 #include <Arduino.h>
 #include <semphr.h>
 
+#include <vector>
+
+#include "Utils.h"
+
 extern SemaphoreHandle_t canvasSemaphore;
+extern std::vector<TaskInfo> taskTable;
 
 #endif  // GLOBALS_H
