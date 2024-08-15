@@ -5,7 +5,6 @@
 
 #include <vector>
 
-// #include "../../services/Keyboard/Keyboard.h"
 #include "../assets/m5os.h"
 #include "App.h"
 #include "AppManager.h"
@@ -15,13 +14,6 @@
 #include "Utils.h"
 
 class Launcher : public App {
-   private:
-    int selectIndex;
-    bool needRedraw;
-    std::vector<String> apps;
-    static M5Canvas tempCanvas;
-    static DrawingArea drawingArea;
-
    public:
     Launcher();
     ~Launcher();
@@ -29,6 +21,9 @@ class Launcher : public App {
     void onAppClose() override;
     void onAppTick() override;
     void draw() override;
+
+   private:
+    uint16_t nloop;
 };
 
 #endif  // LAUNCHER_H

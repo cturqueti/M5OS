@@ -8,8 +8,6 @@
 #include "App.h"
 #include "AppManager.h"
 #include "Globals.h"
-#include "M5Cardputer.h"
-#include "M5GFX.h"
 #include "SD.h"
 #include "ScreenManager.h"
 #include "Utils.h"
@@ -18,19 +16,19 @@
 class Calculadora : public App {
    public:
     Calculadora();
-    virtual ~Calculadora();
-
+    ~Calculadora();
     void onAppOpen() override;
     void onAppClose() override;
     void onAppTick() override;
     void draw() override;
 
+    int appPriority() const override { return 2; }
+
     const uint8_t* getIcon() override;
     size_t getIconSize() override;
 
    private:
-    M5Canvas tempCanvas;
-    bool exit = false;
+    uint16_t nloop;
 };
 
 #endif  // CALCULADORA_H

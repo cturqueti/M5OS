@@ -2,14 +2,19 @@
 #define APP_MANAGER_H
 
 #include <Arduino.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 
+#include <algorithm>
 #include <map>
 #include <utility>
 #include <vector>
 
 #include "App.h"
+
+struct TaskInfo {
+    std::string appName;
+    UBaseType_t priority;
+    int coreId;
+};
 
 class AppManager {
    public:
@@ -20,29 +25,35 @@ class AppManager {
     }
 
     // Métodos para gerenciar aplicativos
-    void addApp(const String& appName, App* app);
-    void openApp(const String& appName);
-    void closeApp(const String& appName);
+    void addApp(const std::string& appName, App* app);
+    void openApp(const std::string& appName);
+    void closeApp(const std::string& appName);
     void closeCurrentApp();
-    void startAppTask(const String& appName);
-    App* getApp(const String& appName);
-    String getCurrentAppName() const;
-    void switchToApp(const String& appName);
+    void startAppTask(const std::string& appName);
+    App* getApp(const std::string& appName);
+    std::string getCurrentAppName() const;
+    void switchToApp(const std::string& appName);
     void tickCurrentApp();
     void draw();
     std::vector<std::pair<std::string, App*>> listApps();
 
-    std::vector<String> listOpenApps() const;
+    std::vector<std::string> listOpenApps() const;
 
     void printDebugInfo();
+
+    void printTaskTable();
 
    private:
     AppManager();
     ~AppManager();
 
-    std::map<String, App*> apps;  // Mapeia nomes de aplicativos para instâncias
-    std::map<String, TaskHandle_t> appTasks;
-    String currentAppName;
+    TaskInfo* findTaskByName(const std::string& name);
+    bool removeTaskByName(const std::string& name);
+
+    std::map<std::string, App*> apps;  // Mapeia nomes de aplicativos para instâncias
+    // std::map<std::string, TaskHandle_t> appTasks;
+    std::vector<TaskInfo> taskTable;
+    std::string currentAppName;
     App* currentApp;
 
     // Não permite a cópia

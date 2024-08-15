@@ -2,14 +2,12 @@
 #define APP_H
 
 #include <Arduino.h>
-#include <M5Cardputer.h>
 #include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
 
 class App {
    public:
     App();
     virtual ~App();
-    void begin();
 
     virtual void onAppOpen() = 0;
     virtual void onAppClose() = 0;
@@ -17,18 +15,21 @@ class App {
     virtual void draw() = 0;       // Função de desenho do aplicativo
 
     // Getters e Setters
-    TaskHandle_t getTaskHandle() const;
-    void setTaskHandle(TaskHandle_t handle);
+    inline TaskHandle_t getTaskHandle() const { return taskHandle; };
+    inline void setTaskHandle(TaskHandle_t handle) { taskHandle = handle; };
+    inline bool isTaskRunning() const { return isRunning; };
 
-    virtual const uint8_t* getIcon() {
-        return nullptr;
-    };
-    virtual size_t getIconSize() {
-        return 0;
-    };
+    inline std::string getAppName() const { return appName; }
+    inline void setAppName(const std::string& name) { appName = name; }
+
+    virtual int appPriority() const { return 10; }  // Pode ser sobrescrito
+    virtual const uint8_t* getIcon() { return nullptr; };
+    virtual size_t getIconSize() { return 0; };
 
    private:
-    TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
+    bool isRunning;
+    static TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
+    std::string appName;
 };
 
 #endif  // APP_H

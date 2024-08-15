@@ -32,7 +32,7 @@ void StatusBar::draw(bool force) {
         canvas.drawFastHLine(area.xStart, area.yStart + 15, area.width, WHITE);
 
         // Desenha uma string dentro da área útil
-        canvas.drawString(AppManager::getInstance().getCurrentAppName(), area.xStart + 5, area.yStart + 5);
+        canvas.drawString(String(AppManager::getInstance().getCurrentAppName().c_str()), area.xStart + 5, area.yStart + 5);
 
         const uint8_t* icon = Keyboard::getInstance().getIcon();
         size_t iconSize = Keyboard::getInstance().getIconSize();

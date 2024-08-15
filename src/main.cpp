@@ -15,17 +15,8 @@
 #include "services/Keyboard/Keyboard.h"
 
 void setup() {
-    // Inicializa o M5Cardputer e outros componentes
-
-    Preferences preferences;
-
-    // Inicia o ServiceManager
-    ServicesManager& servicesManager = ServicesManager::getInstance();
-
-    // Adiciona serviços ao ServiceManager
-    servicesManager.addService("Keyboard", new Keyboard());
-
-    // Inicializa o AppManager
+    esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set("AppManager", ESP_LOG_INFO);
     AppManager& appManager = AppManager::getInstance();
 
     // Adiciona aplicativos ao AppManager
@@ -33,10 +24,13 @@ void setup() {
     appManager.addApp("Settings", new Settings());
     appManager.addApp("Launcher", new Launcher());
 
+    delay(2000);
     // servicesManager.openService("Keyboard");
     appManager.openApp("Launcher");
+    appManager.openApp("Settings");
 }
 
 void loop() {
-    delay(1000);  // Pequeno delay para reduzir o uso da CPU
+    AppManager::getInstance().printDebugInfo();
+    delay(2000);  // Pequeno delay para reduzir o uso da CPU
 }
