@@ -13,7 +13,7 @@
 struct TaskInfo {
     std::string appName;
     UBaseType_t priority;
-    int coreId;
+    uint8_t coreId;
 };
 
 class AppManager {
@@ -49,9 +49,12 @@ class AppManager {
 
     TaskInfo* findTaskByName(const std::string& name);
     bool removeTaskByName(const std::string& name);
+    void countTasksPerCore(const std::vector<TaskInfo>& taskTable);
+
+    UBaseType_t core0Tasks = 0;
+    UBaseType_t core1Tasks = 0;
 
     std::map<std::string, App*> apps;  // Mapeia nomes de aplicativos para instâncias
-    // std::map<std::string, TaskHandle_t> appTasks;
     std::vector<TaskInfo> taskTable;
     std::string currentAppName;
     App* currentApp;

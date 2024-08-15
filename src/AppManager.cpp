@@ -6,7 +6,7 @@
 
 static const char* TAG = "AppManager";
 
-AppManager::AppManager() : currentAppName(""), currentApp(nullptr) {}
+AppManager::AppManager() : currentAppName(""), currentApp(nullptr), core0Tasks(0), core1Tasks(0) {}
 
 AppManager::~AppManager() {
     closeCurrentApp();
@@ -130,10 +130,9 @@ void taskFunction(void* pvParameters) {
 }
 
 void AppManager::startAppTask(const std::string& appName) {
-    static bool useCore1 = true;  // Alterna entre os núcleos
-
-    int coreId = useCore1 ? 1 : 0;
-    useCore1 = !useCore1;
+    countTasksPerCore(taskTable);
+    // Seleciona o núcleo com menor carga
+    int coreId = (core0Tasks > core1Tasks) ? 1 : 0;
 
     App* app = getApp(appName);
     if (app) {
@@ -235,5 +234,18 @@ void AppManager::printDebugInfo() {
                  taskInfo.appName.c_str(),
                  taskInfo.priority,
                  taskInfo.coreId);
+    }
+}
+
+void AppManager::countTasksPerCore(const std::vector<TaskInfo>& taskTable) {
+    core0Tasks = 0;
+    core1Tasks = 0;
+    // Itera sobre a tabela de tarefas e conta as tarefas em cada núcleo
+    for (const auto& task : taskTable) {
+        if (task.coreId == 0) {
+            core0Tasks++;
+        } else if (task.coreId == 1) {
+            core1Tasks++;
+        }
     }
 }

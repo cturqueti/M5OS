@@ -7,7 +7,7 @@ static const char* TAG = "App";
 TaskHandle_t App::taskHandle = nullptr;
 
 // Construtor
-App::App() : isRunning(false), appName("") {}
+App::App() : isRunning(false), appName(""), priority(99) {}
 
 // Destrutor
 App::~App() {

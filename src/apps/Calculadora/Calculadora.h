@@ -22,12 +22,13 @@ class Calculadora : public App {
     void onAppTick() override;
     void draw() override;
 
-    int appPriority() const override { return 2; }
+    inline int appPriority() const override { return priority; }
 
     const uint8_t* getIcon() override;
     size_t getIconSize() override;
 
    private:
+    uint8_t priority;
     uint16_t nloop;
 };
 

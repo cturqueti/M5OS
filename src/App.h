@@ -22,11 +22,12 @@ class App {
     inline std::string getAppName() const { return appName; }
     inline void setAppName(const std::string& name) { appName = name; }
 
-    virtual int appPriority() const { return 10; }  // Pode ser sobrescrito
+    virtual int appPriority() const { return priority; }  // Pode ser sobrescrito
     virtual const uint8_t* getIcon() { return nullptr; };
     virtual size_t getIconSize() { return 0; };
 
    private:
+    uint8_t priority;
     bool isRunning;
     static TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
     std::string appName;
