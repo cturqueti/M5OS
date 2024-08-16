@@ -111,7 +111,7 @@ void taskServicesFunction(void* pvParameters) {
         service->onServiceTick();  // Chama a função de atualização do service
         // service->draw(); // not used
         // ESP_LOGV(TAG, "Tick: %s", service->getServiceName().c_str());
-        vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
+        vTaskDelay(pdMS_TO_TICKS(100));  // Delay de 1s
     }
 }
 

@@ -15,6 +15,8 @@ class Service {
     virtual void onServiceTick() = 0;
     virtual void onServiceClose() = 0;
     virtual void draw() = 0;  // Função de desenho do serviço
+        virtual const uint8_t* getIcon() = 0;
+    virtual size_t getIconSize() = 0;
 
     inline TaskHandle_t getTaskHandle() const { return taskHandle; };
     inline void setTaskHandle(TaskHandle_t handle) { taskHandle = handle; };

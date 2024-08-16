@@ -14,7 +14,7 @@
 #include "apps/Calculadora/Calculadora.h"
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
-#include "services/mSD/Msd.h"
+#include "services/SDManager/SDManager.h"
 // #include "services/Keyboard/Keyboard.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
@@ -42,11 +42,11 @@ void setup() {
     //  } else {
     //      printf("MicroSd Ok\n");
     //  }
-
+    // SDManager::getInstance().onServiceOpen();
     ServicesManager& serviceManager = ServicesManager::getInstance();
-    serviceManager.addService("mSD", new Msd());
+    serviceManager.addService("SDManager", new SDManager());
 
-    serviceManager.openService("mSD");
+    serviceManager.openService("SDManager");
 
     AppManager& appManager = AppManager::getInstance();
 
@@ -55,7 +55,6 @@ void setup() {
     appManager.addApp("Settings", new Settings());
     appManager.addApp("Launcher", new Launcher());
 
-    delay(2000);
     // servicesManager.openService("Keyboard");
     // appManager.openApp("Launcher");
     // appManager.openApp("Settings");

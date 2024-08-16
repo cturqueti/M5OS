@@ -1,5 +1,5 @@
-#ifndef MSD_H
-#define MSD_H
+#ifndef WIFIMANAGER_H
+#define WIFIMANAGER_H
 
 #include <Arduino.h>
 
@@ -12,10 +12,20 @@
 // #include <M5Cardputer.h>
 #include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
 
-class Msd : public Service {
+#include "WifiConnected.h"
+#include "WifiDisconnected.h"
+
+class WiFiManager : public Service {
    public:
-    Msd();
-    virtual ~Msd();
+    int scanRate;
+
+    WiFiManager();
+    virtual ~WiFiManager();
+
+    static WiFiManager& getInstance() {
+        static WiFiManager instance;
+        return instance;
+    }
 
     // Métodos virtuais puros que precisam ser implementados por classes derivadas
     void onServiceOpen();
@@ -25,10 +35,17 @@ class Msd : public Service {
 
     int servicePriority() const { return priority; }  // Pode ser sobrescrito
 
+    inline bool isConnected() { return connected; }
+
+    const uint8_t* getIcon() override;  // os icones devem ser PNG tamanho 12X12
+    size_t getIconSize() override;
+
    protected:
-    SDCardPin sdCard;
+    uint8_t connected;
+    int lastMillis;
     uint8_t priority;
-    SPIClass SPI2;
+    WiFiManager(WiFiManager const&) = delete;
+    void operator=(WiFiManager const&) = delete;
 };
 
 #endif  // APP_H
