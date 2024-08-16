@@ -2,8 +2,10 @@
 #define SERVICE_H
 
 #include <Arduino.h>
-// #include <M5Cardputer.h>
-#include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
+#include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 
 class Service {
    public:

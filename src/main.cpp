@@ -15,13 +15,13 @@
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
 #include "services/SDManager/SDManager.h"
+#include "services/WifiManager/WiFiManager.h"
 // #include "services/Keyboard/Keyboard.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-SPIClass SPI2;
 
 void setup() {
-    Serial.begin(115200);
+    // Serial.begin(115200);
     delay(2000);
     printf("Iniciando M5OS\n");
     Preferences preferences;
@@ -45,8 +45,10 @@ void setup() {
     // SDManager::getInstance().onServiceOpen();
     ServicesManager& serviceManager = ServicesManager::getInstance();
     serviceManager.addService("SDManager", new SDManager());
+    serviceManager.addService("WiFiManager", new WiFiManager());
 
-    serviceManager.openService("SDManager");
+    // serviceManager.openService("SDManager");
+    serviceManager.openService("WiFiManager");
 
     AppManager& appManager = AppManager::getInstance();
 

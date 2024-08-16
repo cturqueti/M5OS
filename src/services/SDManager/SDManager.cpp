@@ -73,5 +73,10 @@ void SDManager::onServiceClose() {
 
 void SDManager::draw() {}
 
-    const uint8_t* SDManager::getIcon() {}
-    size_t SDManager::getIconSize() {}
+const uint8_t* SDManager::getIcon() {
+    return 0;
+}
+
+size_t SDManager::getIconSize() {
+    return 0;
+}

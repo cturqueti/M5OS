@@ -2,7 +2,8 @@
 #define APP_H
 
 #include <Arduino.h>
-#include <freertos/task.h>  // Inclui o cabeçalho adequado para o tipo TaskHandle_t
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 class App {
    public:
