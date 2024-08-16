@@ -12,7 +12,7 @@ Settings::~Settings() {
 
 void Settings::onAppTick() {
     if (millis() - lastMillis > delay_t) {
-        printf("Testando o programa\n");
+        //printf("Testando o programa\n");
         lastMillis = millis();
     }
 

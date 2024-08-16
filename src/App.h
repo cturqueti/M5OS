@@ -10,9 +10,9 @@ class App {
     virtual ~App();
 
     virtual void onAppOpen() = 0;
-    virtual void onAppClose() = 0;
     virtual void onAppTick() = 0;  // Função de atualização do aplicativo
-    virtual void draw() = 0;       // Função de desenho do aplicativo
+    virtual void onAppClose() = 0;
+    virtual void draw() = 0;  // Função de desenho do aplicativo
 
     // Getters e Setters
     inline TaskHandle_t getTaskHandle() const { return taskHandle; };

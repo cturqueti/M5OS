@@ -12,8 +12,8 @@ class Service {
 
     // Métodos virtuais puros que precisam ser implementados por classes derivadas
     virtual void onServiceOpen() = 0;
-    virtual void onServiceClose() = 0;
     virtual void onServiceTick() = 0;
+    virtual void onServiceClose() = 0;
     virtual void draw() = 0;  // Função de desenho do serviço
 
     inline TaskHandle_t getTaskHandle() const { return taskHandle; };
