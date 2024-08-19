@@ -48,7 +48,7 @@ void setup() {
     serviceManager.addService("WiFiManager", new WiFiManager());
 
     // serviceManager.openService("SDManager");
-    serviceManager.openService("WiFiManager");
+    // serviceManager.openService("WiFiManager");
 
     AppManager& appManager = AppManager::getInstance();
 

@@ -2,13 +2,11 @@
 #define WIFIMANAGER_H
 
 #include <Arduino.h>
-#include <DNSServer.h>
-#include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
 #include <Preferences.h>
 #include <SPIFFS.h>
+#include <WebServer.h>
 
-#include "ConfigWiFI/ConfigWifi.h"
 #include "Service.h"
 #include "WiFi.h"
 #include "WifiConnected.h"
@@ -32,34 +30,26 @@ class WiFiManager : public Service {
     inline bool isConnected() { return connected; }
     const uint8_t* getIcon() override;
     size_t getIconSize() override;
-    void handleClient();
 
    private:
-    // WiFiManager(WiFiManager const&) = delete;
-    // void operator=(WiFiManager const&) = delete;
-
-    // void startAP();
     void connectToWiFi();
 
     static void WiFiEvent(WiFiEvent_t event);
     void setupMDNS();
     void startServer();
-    void handleRoot(AsyncWebServerRequest* request);
-    void handleConfig(AsyncWebServerRequest* request);
+    void handleRoot();
+    void handleConfig();
 
     std::string ssid;
     std::string passwd;
     Preferences preferences;
     MDNSResponder mdns;
-    ConfigWifi configWifiInstance;
-    AsyncWebServer server;
-    DNSServer dnsServer;
+    WebServer server;
     static bool connected;
     int lastMillis;
     uint8_t priority;
     static const char* TAG;
-    bool serviceOpenFiniched;
-    bool dnsServerStarted;
+    bool serverStarted;
 };
 
 #endif  // WIFIMANAGER_H
