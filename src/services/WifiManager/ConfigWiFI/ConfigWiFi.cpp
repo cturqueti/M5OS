@@ -1,12 +1,10 @@
 #include "ConfigWifi.h"
 
-#include <SPIFFS.h>
-
 #include "esp_log.h"
 
-static const char* TAG = "ConfigWiFi";
+static const char *TAG = "ConfigWiFi";
 
-ConfigWifi::ConfigWifi(const char* _preferencesAddress)
+ConfigWifi::ConfigWifi(const char *_preferencesAddress)
     : preferencesAddress(_preferencesAddress), server(80) {}
 
 void ConfigWifi::begin() {
@@ -47,60 +45,39 @@ void ConfigWifi::setupMDNS() {
 }
 
 void ConfigWifi::startServer() {
-    // Rotas HTTP com WebServer
-    server.on("/", HTTP_GET, std::bind(&ConfigWifi::handleRoot, this));
-    server.on("/config", HTTP_POST, std::bind(&ConfigWifi::handleConfig, this));
+    // Rota principal, serve o arquivo HTML da configuração
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/config.html", "text/html");
+    });
+
+    // Ignorar favicon.ico para evitar logs desnecessários
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(204);  // Resposta vazia, sem conteúdo
+    });
+
+    // Rota de configuração via POST
+    server.on("/config", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        if (request->hasParam("ssid", true) && request->hasParam("password", true)) {
+            String ssid = request->getParam("ssid", true)->value();
+            String password = request->getParam("password", true)->value();
+
+            this->preferences.begin(this->preferencesAddress);
+            this->preferences.putString("ssid", ssid);
+            this->preferences.putString("password", password);
+            this->preferences.end();
+
+            // Responder ao cliente
+            request->send(200, "text/plain", "Configurações salvas, reiniciando...");
+
+            // Reiniciar ESP32 após enviar resposta
+            delay(1000);
+            ESP.restart();
+        } else {
+            request->send(400, "text/plain", "Parâmetros inválidos");
+        }
+    });
+
+    // Iniciar o servidor
     server.begin();
-    ESP_LOGI(TAG, "HTTP server started");
-}
-
-void ConfigWifi::handleRoot() {
-    File file = SPIFFS.open("/config.html", "r");
-    if (!file) {
-        server.send(404, "text/plain", "Page not found");
-        ESP_LOGI(TAG, "Page not found");
-        return;
-    }
-
-    String html = file.readString();
-    file.close();
-
-    server.send(200, "text/html", html);
-    ESP_LOGI(TAG, "HTML page sent");
-}
-
-void ConfigWifi::handleConfig() {
-    if (!server.hasArg("ssid") || !server.hasArg("passwd")) {
-        server.send(400, "text/plain", "Invalid Request");
-        return;
-    }
-
-    String ssid = server.arg("ssid");
-    String passwd = server.arg("passwd");
-
-    preferences.begin(preferencesAddress, false);
-    preferences.putString("ssid", ssid);
-    preferences.putString("passwd", passwd);
-    preferences.end();
-
-    File file = SPIFFS.open("/success.html", "r");
-    if (!file) {
-        server.send(404, "text/plain", "Page not found");
-        ESP_LOGI(TAG, "Page not found");
-        return;
-    }
-
-    String html = file.readString();
-    file.close();
-    server.send(200, "text/html", html);
-
-    WiFi.softAPdisconnect(true);
-    delay(1000);
-    mdns.end();
-    ESP.restart();
-}
-
-void ConfigWifi::handleClient() {
-    // dnsServer.processNextRequest();
-    server.handleClient();  // Processa as requisições do servidor Web
+    ESP_LOGI(TAG, "Servidor HTTP iniciado.");
 }

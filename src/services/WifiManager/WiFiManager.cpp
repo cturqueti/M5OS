@@ -54,7 +54,7 @@ void WiFiManager::connectToWiFi() {
 void WiFiManager::onServiceTick() {
     if (millis() - lastMillis > 100) {
         // dnsServer.processNextRequest();
-        configWifiInstance.handleClient();
+        // configWifiInstance.handleClient();
         lastMillis = millis();
     }
 }
