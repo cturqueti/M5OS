@@ -4,10 +4,11 @@
 
 static const char *TAG = "ConfigWiFi";
 
-ConfigWifi::ConfigWifi(const char *_preferencesAddress)
-    : preferencesAddress(_preferencesAddress), server(80) {}
+ConfigWifi::ConfigWifi()
+    : server(80) {}
 
-void ConfigWifi::begin() {
+void ConfigWifi::begin(const char *_preferencesAddress) {
+    preferencesAddress = _preferencesAddress;
     if (!SPIFFS.begin(true)) {
         ESP_LOGI(TAG, "Failed to mount SPIFFS");
         return;
@@ -18,22 +19,12 @@ void ConfigWifi::begin() {
 }
 
 void ConfigWifi::startAP() {
-    WiFi.mode(WIFI_AP);
+    // WiFi.mode(WIFI_AP);
 
-    IPAddress local_IP(192, 168, 1, 1);
-    IPAddress gateway(192, 168, 1, 1);
-    IPAddress subnet(255, 255, 255, 0);
-
-    // Configurar o AP
-    if (WiFi.softAPConfig(local_IP, gateway, subnet)) {
-        // Iniciar o AP
-        WiFi.softAP("ConfigWifi");
-
-        IPAddress IP = WiFi.softAPIP();
-        ESP_LOGI(TAG, "Access Point Started. IP Address: %s", IP.toString().c_str());
-    } else {
-        ESP_LOGE(TAG, "Não foi possível configurar o AP");
-    }
+    WiFi.softAP("ConfigWifi");
+    IPAddress IP = WiFi.softAPIP();
+    ESP_LOGI(TAG, "Access Point Started");
+    ESP_LOGI(TAG, "IP Address: %s", IP.toString().c_str());
 }
 
 void ConfigWifi::setupMDNS() {
@@ -46,38 +37,66 @@ void ConfigWifi::setupMDNS() {
 
 void ConfigWifi::startServer() {
     // Rota principal, serve o arquivo HTML da configuração
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/config.html", "text/html");
-    });
-
-    // Ignorar favicon.ico para evitar logs desnecessários
-    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(204);  // Resposta vazia, sem conteúdo
-    });
+    server.on("/", HTTP_GET, std::bind(&ConfigWifi::handleRoot, this, std::placeholders::_1));
 
     // Rota de configuração via POST
-    server.on("/config", HTTP_POST, [this](AsyncWebServerRequest *request) {
-        if (request->hasParam("ssid", true) && request->hasParam("password", true)) {
-            String ssid = request->getParam("ssid", true)->value();
-            String password = request->getParam("password", true)->value();
-
-            this->preferences.begin(this->preferencesAddress);
-            this->preferences.putString("ssid", ssid);
-            this->preferences.putString("password", password);
-            this->preferences.end();
-
-            // Responder ao cliente
-            request->send(200, "text/plain", "Configurações salvas, reiniciando...");
-
-            // Reiniciar ESP32 após enviar resposta
-            delay(1000);
-            ESP.restart();
-        } else {
-            request->send(400, "text/plain", "Parâmetros inválidos");
-        }
-    });
+    server.on("/config", HTTP_POST, std::bind(&ConfigWifi::handleConfig, this, std::placeholders::_1));
 
     // Iniciar o servidor
     server.begin();
     ESP_LOGI(TAG, "Servidor HTTP iniciado.");
+}
+
+void ConfigWifi::handleRoot(AsyncWebServerRequest *request) {
+    // Carrega a página HTML do SPIFFS
+    ESP_LOGI(TAG, "Requisitou /");
+    String htmlPath = "/config.html";  // Caminho para seu arquivo HTML no SPIFFS
+
+    // Lê o conteúdo do arquivo HTML
+    File file = SPIFFS.open(htmlPath, "r");
+    if (!file) {
+        request->send(404, "text/plain", "Página não encontrada");
+        ESP_LOGW(TAG, "Página não encontrada");
+        return;
+    }
+
+    // Envia o conteúdo do arquivo HTML como resposta
+    String html = file.readString();
+    file.close();
+
+    request->send(200, "text/html", html);
+    ESP_LOGI(TAG, "Página HTML enviada");
+}
+
+void ConfigWifi::handleConfig(AsyncWebServerRequest *request) {
+    ESP_LOGI(TAG, "Requisitou /config");
+    String ssid = request->getParam("ssid", true)->value();
+    String password = request->getParam("password", true)->value();
+
+    // Salve o SSID e senha recebidos em uma memória não volátil
+    preferences.begin(preferencesAddress, false);
+    preferences.putString("ssid", ssid);
+    preferences.putString("password", password);
+    preferences.end();
+
+    String htmlPath = "/sucess.html";
+    // Lê o conteúdo do arquivo HTML
+    File file = SPIFFS.open(htmlPath, "r");
+    if (!file) {
+        request->send(404, "text/plain", "Página não encontrada");
+        ESP_LOGW(TAG, "Página não encontrada");
+        return;
+    }
+
+    // Envia o conteúdo do arquivo HTML como resposta
+    String html = file.readString();
+    file.close();
+
+    request->send(200, "text/html", html);
+
+    // Desconecte o AP e reinicie o ESP para conectar-se à nova rede
+    WiFi.softAPdisconnect(true);
+    delay(1000);
+    mdns.end();
+    ESP.restart();
 }

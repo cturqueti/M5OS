@@ -9,14 +9,14 @@
 
 class ConfigWifi {
    public:
-    ConfigWifi(const char* _preferencesAddress);
-    void begin();
+    ConfigWifi();
+    void begin(const char* _preferencesAddress);
     // void handleClient();
 
    private:
     void startServer();
-    // void handleRoot();
-    // void handleConfig();
+    void handleRoot(AsyncWebServerRequest* request);
+    void handleConfig(AsyncWebServerRequest* request);
     void setupMDNS();
     void startAP();
 

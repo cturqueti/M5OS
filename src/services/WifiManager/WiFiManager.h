@@ -3,8 +3,10 @@
 
 #include <Arduino.h>
 #include <DNSServer.h>
+#include <ESPAsyncWebServer.h>
+#include <ESPmDNS.h>
 #include <Preferences.h>
-#include <WebServer.h>
+#include <SPIFFS.h>
 
 #include "ConfigWiFI/ConfigWifi.h"
 #include "Service.h"
@@ -30,26 +32,34 @@ class WiFiManager : public Service {
     inline bool isConnected() { return connected; }
     const uint8_t* getIcon() override;
     size_t getIconSize() override;
+    void handleClient();
 
    private:
-    WiFiManager(WiFiManager const&) = delete;
-    void operator=(WiFiManager const&) = delete;
+    // WiFiManager(WiFiManager const&) = delete;
+    // void operator=(WiFiManager const&) = delete;
 
     // void startAP();
     void connectToWiFi();
 
     static void WiFiEvent(WiFiEvent_t event);
+    void setupMDNS();
+    void startServer();
+    void handleRoot(AsyncWebServerRequest* request);
+    void handleConfig(AsyncWebServerRequest* request);
 
     std::string ssid;
     std::string passwd;
     Preferences preferences;
-    // DNSServer dnsServer;
-    WebServer server;
+    MDNSResponder mdns;
     ConfigWifi configWifiInstance;
+    AsyncWebServer server;
+    DNSServer dnsServer;
     static bool connected;
     int lastMillis;
     uint8_t priority;
     static const char* TAG;
+    bool serviceOpenFiniched;
+    bool dnsServerStarted;
 };
 
 #endif  // WIFIMANAGER_H
