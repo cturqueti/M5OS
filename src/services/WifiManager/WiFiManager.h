@@ -34,11 +34,12 @@ class WiFiManager : public Service {
    private:
     void connectToWiFi();
 
-    static void WiFiEvent(WiFiEvent_t event);
+    void WiFiEvent(WiFiEvent_t event);
     void setupMDNS();
     void startServer();
     void handleRoot();
     void handleConfig();
+    void reconnect();
 
     std::string ssid;
     std::string passwd;
@@ -46,10 +47,11 @@ class WiFiManager : public Service {
     MDNSResponder mdns;
     WebServer server;
     static bool connected;
+    static bool disconnected;
     int lastMillis;
     uint8_t priority;
     static const char* TAG;
-    bool serverStarted;
+    bool serverConfigWiFiStarted;
 };
 
 #endif  // WIFIMANAGER_H

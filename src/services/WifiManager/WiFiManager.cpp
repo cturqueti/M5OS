@@ -5,8 +5,9 @@
 const char* WiFiManager::TAG = "WiFi";
 
 bool WiFiManager::connected = false;
+bool WiFiManager::disconnected = false;
 
-WiFiManager::WiFiManager() : priority(99), server(80), serverStarted(false) {}
+WiFiManager::WiFiManager() : priority(99), server(80), serverConfigWiFiStarted(false) {}
 
 WiFiManager::~WiFiManager() {}
 
@@ -40,6 +41,11 @@ void WiFiManager::connectToWiFi() {
     ESP_LOGV(TAG, "Connecting to Wi-Fi...");
     ESP_LOGV(TAG, "SSID: %s\tPassword: %s", ssid.c_str(), passwd.c_str());
     WiFi.mode(WIFI_STA);
+
+    WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
+        this->WiFiEvent(event);
+    });
+
     WiFi.begin(ssid.c_str(), passwd.c_str());
 
     int attempts = 0;
@@ -52,7 +58,8 @@ void WiFiManager::connectToWiFi() {
     if (attempts < maxAttempts) {
         ESP_LOGI(TAG, "Connected to Wi-Fi!");
         ESP_LOGI(TAG, "IP Address: %s", WiFi.localIP().toString().c_str());
-        WiFi.onEvent(WiFiManager::WiFiEvent);
+
+        connected = true;
     } else {
         ESP_LOGW(TAG, "Failed to connect to Wi-Fi.");
     }
@@ -60,8 +67,11 @@ void WiFiManager::connectToWiFi() {
 
 void WiFiManager::onServiceTick() {
     if (millis() - lastMillis > 100) {
-        if (serverStarted) {
+        if (serverConfigWiFiStarted) {
             server.handleClient();
+        }
+        while (disconnected) {
+            vTaskDelay(pdMS_TO_TICKS(50));
         }
 
         lastMillis = millis();
@@ -85,14 +95,62 @@ size_t WiFiManager::getIconSize() {
 }
 
 void WiFiManager::WiFiEvent(WiFiEvent_t event) {
-    if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-        ESP_LOGI(TAG, "Got IP Address: %s", WiFi.localIP().toString().c_str());
+    if (event == ARDUINO_EVENT_WIFI_SCAN_DONE) {
+        ESP_LOGI(TAG, "Wi-Fi scan done");
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_START) {
+        ESP_LOGI(TAG, "Wi-Fi STA started");
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_STOP) {
+        ESP_LOGI(TAG, "Wi-Fi STA stopped");
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_CONNECTED) {
+        ESP_LOGI(TAG, "Wi-Fi STA connected");
         connected = true;
+        disconnected = false;
+
     } else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-        ESP_LOGI(TAG, "Disconnected from Wi-Fi");
+        ESP_LOGI(TAG, "Wi-Fi STA disconnected");
         connected = false;
+        disconnected = true;
+        // Tentar reconectar
+        onServiceOpen();
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE) {
+        ESP_LOGI(TAG, "Wi-Fi authentication mode changed");
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+        ESP_LOGI(TAG, "Got IP Address: %s", WiFi.localIP().toString().c_str());
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP6) {
+        ESP_LOGI(TAG, "Got IPv6 Address");
+
+    } else if (event == ARDUINO_EVENT_WIFI_STA_LOST_IP) {
+        ESP_LOGI(TAG, "Lost IP Address");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_START) {
+        ESP_LOGI(TAG, "Wi-Fi AP started");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_STOP) {
+        ESP_LOGI(TAG, "Wi-Fi AP stopped");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_STACONNECTED) {
+        ESP_LOGI(TAG, "A client connected to the AP");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_STADISCONNECTED) {
+        ESP_LOGI(TAG, "A client disconnected from the AP");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED) {
+        ESP_LOGI(TAG, "IP assigned to a client");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED) {
+        ESP_LOGI(TAG, "Probe request received");
+
+    } else if (event == ARDUINO_EVENT_WIFI_AP_GOT_IP6) {
+        ESP_LOGI(TAG, "AP got IPv6 Address");
+
     } else {
-        ESP_LOGI(TAG, "Codigo: %d", event);
+        ESP_LOGI(TAG, "Unhandled Wi-Fi event: %d", event);
     }
 }
 
@@ -114,7 +172,7 @@ void WiFiManager::startServer() {
     // Iniciar o servidor
     server.begin();
     ESP_LOGI(TAG, "Servidor HTTP iniciado.");
-    serverStarted = true;
+    serverConfigWiFiStarted = true;
 }
 
 void WiFiManager::handleRoot() {
@@ -152,6 +210,7 @@ void WiFiManager::handleConfig() {
         // Redirecionar para a página de sucesso
         server.streamFile(file, "text/html");
         file.close();
+        esp_restart();
     } else {
         // Resposta caso falte algum campo
         server.send(400, "text/plain", "Erro: SSID e Senha são obrigatórios!");
