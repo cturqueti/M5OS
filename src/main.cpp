@@ -14,6 +14,7 @@
 #include "apps/Calculadora/Calculadora.h"
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
+#include "services/MqttManager/MqttManager.h"
 #include "services/SDManager/SDManager.h"
 #include "services/WifiManager/WiFiManager.h"
 // #include "services/Keyboard/Keyboard.h"
@@ -46,9 +47,11 @@ void setup() {
     ServicesManager& serviceManager = ServicesManager::getInstance();
     serviceManager.addService("SDManager", new SDManager());
     serviceManager.addService("WiFiManager", new WiFiManager());
+    serviceManager.addService("MqttManager", new MqttManager());
 
     // serviceManager.openService("SDManager");
-    // serviceManager.openService("WiFiManager");
+    serviceManager.openService("WiFiManager");
+    serviceManager.openService("MqttManager");
 
     AppManager& appManager = AppManager::getInstance();
 
