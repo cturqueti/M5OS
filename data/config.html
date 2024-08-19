@@ -34,15 +34,39 @@
       margin-top: 10px;
     }
   </style>
+  <script>
+    function updateSSIDList() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/get_ssids", true);
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          document.getElementById('ssid').innerHTML = xhr.responseText;
+        }
+      };
+      xhr.send();
+    }
+
+    // Atualiza a lista a cada 2 segundos
+    setInterval(updateSSIDList, 2000);
+
+    // Atualiza a lista imediatamente quando a página carrega
+    window.onload = updateSSIDList;
+  </script>
 </head>
 
 <body>
   <h1>Configuração de Wi-Fi!</h1>
   <form action="/config" method="POST">
     <label for="ssid">SSID:</label>
-    <input type="text" id="ssid" name="ssid" required>
+    <select id="ssid" name="ssid" required>
+      <option value="">Carregando...</option>
+    </select>
+
+    <br>
+
     <label for="password">Senha:</label>
     <input type="password" id="password" name="password" required>
+
     <input type="submit" value="Salvar">
   </form>
 </body>

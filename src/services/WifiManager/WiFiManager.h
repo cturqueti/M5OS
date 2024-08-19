@@ -7,6 +7,9 @@
 #include <SPIFFS.h>
 #include <WebServer.h>
 
+#include <algorithm>
+#include <string>
+
 #include "Service.h"
 #include "WiFi.h"
 #include "WifiConnected.h"
@@ -33,13 +36,14 @@ class WiFiManager : public Service {
 
    private:
     void connectToWiFi();
-
     void WiFiEvent(WiFiEvent_t event);
     void setupMDNS();
     void startServer();
     void handleRoot();
+    void handleGetSSIDs();
     void handleConfig();
-    void reconnect();
+    void performWiFiScan();
+    std::string escapeHtml(const std::string& input);
 
     std::string ssid;
     std::string passwd;
