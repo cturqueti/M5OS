@@ -42,9 +42,12 @@ class MqttManager : public Service {
     void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
     void onMqttSubscribe(uint16_t packetId, uint8_t qos);
     void onMqttUnsubscribe(uint16_t packetId);
+    void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    void onMqttPublish(uint16_t packetId);
 
     std::string removePrefix(const std::string& topic, const std::string& prefix);
     TopicParts splitTopic(const char* topic);
+    void addLineToBuffer(const String& text);
 
     static std::string mqttUser;
     static std::string mqttPassword;
