@@ -2,8 +2,8 @@
 #define MQTTMANAGER_H
 
 #include <Arduino.h>
-#include <AsyncMqttClient.h>
 #include <Preferences.h>
+#include <PubSubClient.h>
 
 #include "../WifiManager/WiFiManager.h"
 #include "MqttConnected.h"
@@ -35,15 +35,12 @@ class MqttManager : public Service {
     size_t getIconSize() override;
 
    private:
+    WiFiClient espClient;
     Preferences preferences;
-    AsyncMqttClient mqttClient;
+    PubSubClient mqttClient;
 
-    void onMqttConnect(bool sessionPresent);
-    void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
-    void onMqttSubscribe(uint16_t packetId, uint8_t qos);
-    void onMqttUnsubscribe(uint16_t packetId);
-    void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
-    void onMqttPublish(uint16_t packetId);
+    void reconnect();
+    void callback(char* topic, byte* payload, unsigned int length);
 
     std::string removePrefix(const std::string& topic, const std::string& prefix);
     TopicParts splitTopic(const char* topic);
@@ -62,6 +59,7 @@ class MqttManager : public Service {
     int lastMillis;
     uint8_t priority;
     static const char* TAG;
+    IPAddress serverIp;
 };
 
 #endif  // WIFIMANAGER_H
