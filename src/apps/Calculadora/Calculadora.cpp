@@ -1,7 +1,5 @@
 #include "Calculadora.h"
 
-#include "ScreenManager.h"
-
 static const char* TAG = "Calculadora";
 
 Calculadora::Calculadora() : priority(2) {

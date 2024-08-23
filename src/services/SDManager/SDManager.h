@@ -24,10 +24,10 @@ class SDManager : public Service {
     }
 
     // Métodos virtuais puros que precisam ser implementados por classes derivadas
-    void onServiceOpen();
-    void onServiceTick();
-    void onServiceClose();
-    void draw();  // Função de desenho do serviço
+    void onServiceOpen()override;
+    void onServiceTick()override;
+    void onServiceClose()override;
+    void draw()override;  // Função de desenho do serviço
 
     int servicePriority() const { return priority; }  // Pode ser sobrescrito
 

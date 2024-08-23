@@ -25,10 +25,10 @@ class WiFiManager : public Service {
     WiFiManager();
     virtual ~WiFiManager();
 
-    void onServiceOpen();
-    void onServiceTick();
-    void onServiceClose();
-    void draw();
+    void onServiceOpen()override;
+    void onServiceTick()override;
+    void onServiceClose()override;
+    void draw()override;
     int servicePriority() const { return priority; }
     inline bool isConnected() { return connected; }
     const uint8_t* getIcon() override;

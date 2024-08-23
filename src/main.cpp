@@ -8,7 +8,7 @@
 #include "Preferences.h"
 #include "SD.h"
 #include "SPI.h"
-#include "ScreenManager.h"
+// #include "ScreenManager.h"
 #include "ServicesManager.h"
 #include "Utils.h"
 #include "apps/Calculadora/Calculadora.h"
@@ -16,6 +16,7 @@
 #include "apps/Settings/Settings.h"
 #include "services/MqttManager/MqttManager.h"
 #include "services/SDManager/SDManager.h"
+#include "services/ScreenManager/ScreenManager.h"
 #include "services/WifiManager/WiFiManager.h"
 // #include "services/Keyboard/Keyboard.h"
 
@@ -48,10 +49,12 @@ void setup() {
     serviceManager.addService("SDManager", new SDManager());
     serviceManager.addService("WiFiManager", new WiFiManager());
     serviceManager.addService("MqttManager", new MqttManager());
+    serviceManager.addService("ScreenManager", new ScreenManager());
 
     // serviceManager.openService("SDManager");
-    serviceManager.openService("WiFiManager");
-    serviceManager.openService("MqttManager");
+    // serviceManager.openService("WiFiManager");
+    // serviceManager.openService("MqttManager"); //falta terminar
+    serviceManager.openService("ScreenManager");
 
     AppManager& appManager = AppManager::getInstance();
 

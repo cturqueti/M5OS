@@ -96,20 +96,20 @@ void MqttManager::reconnect() {
     }
 }
 
-void MqttManager::reconnect() {
-    while (!mqttClient.connected()) {
-        ESP_LOGI(TAG, "Attempting MQTT connection...");
-        if (mqttClient.connect("clientId", mqttUser.c_str(), mqttPassword.c_str())) {
-            ESP_LOGI(TAG, "Connected to MQTT.");
-            mqttClient.subscribe((module + "/#").c_str(), 2);
-            mqttClient.subscribe("broadcast/#", 2);
-            mqttClient.publish("teste", "Conectou bem");
-        } else {
-            ESP_LOGW(TAG, "Failed to connect to MQTT, rc=%d", mqttClient.state());
-            delay(5000);
-        }
-    }
-}
+// void MqttManager::reconnect() {
+//     while (!mqttClient.connected()) {
+//         ESP_LOGI(TAG, "Attempting MQTT connection...");
+//         if (mqttClient.connect("clientId", mqttUser.c_str(), mqttPassword.c_str())) {
+//             ESP_LOGI(TAG, "Connected to MQTT.");
+//             mqttClient.subscribe((module + "/#").c_str(), 2);
+//             mqttClient.subscribe("broadcast/#", 2);
+//             mqttClient.publish("teste", "Conectou bem");
+//         } else {
+//             ESP_LOGW(TAG, "Failed to connect to MQTT, rc=%d", mqttClient.state());
+//             delay(5000);
+//         }
+//     }
+// }
 
 void MqttManager::callback(char* topic, byte* payload, unsigned int length) {
     std::string topicStr(topic);

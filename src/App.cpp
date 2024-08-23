@@ -1,6 +1,5 @@
 #include "App.h"
-
-#include "ScreenManager.h"  // Assumindo que o ScreenManager tem a definição do canvas
+  // Assumindo que o ScreenManager tem a definição do canvas
 #include "esp_log.h"
 static const char* TAG = "App";
 
