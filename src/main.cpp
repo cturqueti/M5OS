@@ -64,7 +64,7 @@ void setup() {
     appManager.addApp("Launcher", new Launcher());
 
     // servicesManager.openService("Keyboard");
-    // appManager.openApp("Launcher");
+    appManager.openApp("Launcher");
     // appManager.openApp("Settings");
 }
 

@@ -17,14 +17,14 @@ void Launcher::onAppOpen() {
 }
 
 void Launcher::onAppTick() {
-    nloop -= 1;
-    if (nloop % 10 == 0) {
-        ESP_LOGI(TAG, "Rodando");
-    }
-    // ESP_LOGI(TAG, "Fazendo algo no Launcher");
-    if (nloop < 1) {
-        AppManager::getInstance().closeApp("Launcher");
-    }
+    // nloop -= 1;
+    // if (nloop % 10 == 0) {
+    //     ESP_LOGI(TAG, "Rodando");
+    // }
+    // // ESP_LOGI(TAG, "Fazendo algo no Launcher");
+    // if (nloop < 1) {
+    //     AppManager::getInstance().closeApp("Launcher");
+    // }
 }
 
 void Launcher::onAppClose() {
