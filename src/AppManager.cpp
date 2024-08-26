@@ -168,7 +168,9 @@ std::string AppManager::getCurrentAppName() const {
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {
     std::vector<std::pair<std::string, App*>> appsList;
     for (const auto& app : apps) {
-        appsList.push_back(std::make_pair(app.first.c_str(), app.second));
+        // appsList.push_back(std::make_pair(app.first.c_str(), app.second));
+        appsList.emplace_back(app.first, app.second);
+        // ESP_LOGI(TAG, "ProgramaAberto %s", app.first.c_str());
     }
     return appsList;
 }
