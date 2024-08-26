@@ -12,6 +12,7 @@
 #include "Globals.h"
 #include "SD.h"
 #include "Utils.h"
+#include "GlobalDisplay.h"
 
 class Launcher : public App {
    public:

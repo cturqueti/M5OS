@@ -4,6 +4,7 @@
 #include "../assets/m5os.h"
 #include "Adafruit_NeoPixel.h"
 #include "AppManager.h"
+#include "GlobalDisplay.h"
 #include "Globals.h"
 #include "Preferences.h"
 #include "SD.h"
@@ -17,6 +18,7 @@
 #include "services/MqttManager/MqttManager.h"
 #include "services/SDManager/SDManager.h"
 #include "services/ScreenManager/ScreenManager.h"
+#include "services/ScreenManager/TitleBar.h"
 #include "services/WifiManager/WiFiManager.h"
 // #include "services/Keyboard/Keyboard.h"
 
@@ -29,6 +31,8 @@ void setup() {
     Preferences preferences;
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set("AppManager", ESP_LOG_INFO);
+
+    GlobalDisplay& globalsDisplay = GlobalDisplay::getInstance();
 
     // auto cfg = m5::M5Unified::config();
     // M5Cardputer.begin(cfg, true);
@@ -49,12 +53,13 @@ void setup() {
     serviceManager.addService("SDManager", new SDManager());
     serviceManager.addService("WiFiManager", new WiFiManager());
     serviceManager.addService("MqttManager", new MqttManager());
-    serviceManager.addService("ScreenManager", new ScreenManager());
+    serviceManager.addService("TitleBar", new TitleBar());
+    //  serviceManager.addService("ScreenManager", new ScreenManager());
 
     // serviceManager.openService("SDManager");
     // serviceManager.openService("WiFiManager");
     // serviceManager.openService("MqttManager"); //falta terminar
-    serviceManager.openService("ScreenManager");
+    serviceManager.openService("TitleBar");
 
     AppManager& appManager = AppManager::getInstance();
 
@@ -70,5 +75,6 @@ void setup() {
 
 void loop() {
     // AppManager::getInstance().printDebugInfo();
+    // GlobalDisplay::getInstance().canvas.pushSprite(0, 0);
     delay(2000);  // Pequeno delay para reduzir o uso da CPU
 }

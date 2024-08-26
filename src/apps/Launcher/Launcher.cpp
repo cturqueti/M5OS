@@ -35,4 +35,15 @@ void Launcher::onAppClose() {
 }
 
 void Launcher::draw() {
+    GlobalDisplay& displayManager = GlobalDisplay::getInstance();
+    SemaphoreHandle_t sem = displayManager.getSemaphore();
+
+    if (xSemaphoreTake(sem, portMAX_DELAY) == pdTRUE) {
+        M5Canvas* canvas = displayManager.getCanvas();
+
+        // Código de desenho no canvas
+        // ...
+        // canvas->pushSprite(0, 0);
+        xSemaphoreGive(sem);  // Libere o semáforo após o uso
+    }
 }

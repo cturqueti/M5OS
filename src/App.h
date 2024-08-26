@@ -5,6 +5,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "GlobalDisplay.h"
+
 class App {
    public:
     App();

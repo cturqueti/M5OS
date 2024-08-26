@@ -1,58 +1,75 @@
 #include "TitleBar.h"
 
-TitleBar::TitleBar(M5GFX* display)
-    : display(display),
-      canvas(display),
-      text(""),
-      x0(0),
-      y0(0),
-      width(0),
-      height(0),
+#include "esp_log.h"
+
+const char* TitleBar::TAG = "TitleBar";
+
+TitleBar::TitleBar()
+    : x0(GlobalDisplay::getInstance().titleBarStruct.x0),
+      y0(GlobalDisplay::getInstance().titleBarStruct.y0),
+      x1(GlobalDisplay::getInstance().titleBarStruct.x1),
+      y1(GlobalDisplay::getInstance().titleBarStruct.y1),
+      width(GlobalDisplay::getInstance().titleBarStruct.width),
+      height(GlobalDisplay::getInstance().titleBarStruct.height),
+      titleBar(*GlobalDisplay::getInstance().getCanvas()),
+      lastMillis(millis()),
+      bgColor(TFT_BLACK),
+      textColor(TFT_WHITE),
       borderColor(TFT_WHITE) {
-    canvas.fillSprite(TFT_BLACK);
-    canvas.setTextColor(TFT_WHITE);
 }
 
 TitleBar::~TitleBar() {
-    canvas.deleteSprite();
 }
 
-void TitleBar::begin(int x0, int y0, int x1, int y1) {
-    this->x0 = x0;
-    this->y0 = y0;
-    this->width = x1 - x0;
-    this->height = y1 - y0;
-    canvas.createSprite(width, height);
+void TitleBar::onServiceOpen() {
+    draw();
 }
 
-void TitleBar::configColors(int bgColor, int textColor, int borderColor) {
-    this->borderColor = borderColor;
-    canvas.fillSprite(bgColor);
-    canvas.setTextColor(textColor);
+void TitleBar::onServiceTick() {
+    if (millis() - lastMillis > 200) {
+        lastMillis = millis();
+        draw();
+    }
 }
+
+void TitleBar::onServiceClose() {}
 
 void TitleBar::draw() {
     // Define border parameters
+    SemaphoreHandle_t canvasSemaphore = GlobalDisplay::getInstance().getSemaphore();
     int radius = 10;  // Radius for the rounded corners
+    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+        // Draw the top horizontal line with rounded corners
+        titleBar.drawRect(x0, y0, width, height, bgColor);
+        titleBar.drawLine(x0 + radius, y0, x0 + width - radius - 1, y0, borderColor);
 
-    // Draw the top horizontal line with rounded corners
-    canvas.drawLine(radius, 0, width - radius - 1, 0, borderColor);
+        // Draw the vertical sides
+        titleBar.drawLine(x0, y0 + radius, x0, y0 + height - 1, borderColor);                          // Left side
+        titleBar.drawLine(x0 + width - 1, y0 + radius, x0 + width - 1, y0 + height - 1, borderColor);  // Right side
 
-    // Draw the vertical sides
-    canvas.drawLine(0, radius, 0, height - 1, borderColor);                  // Left side
-    canvas.drawLine(width - 1, radius, width - 1, height - 1, borderColor);  // Right side
+        // Draw the bottom horizontal line
+        titleBar.drawLine(x0, y0 + height - 1, x0 + width - 1, y0 + height - 1, borderColor);
 
-    // Draw the bottom horizontal line
-    // canvas.drawLine(0, height - 1, width - 1, height - 1, borderColor);
+        // Draw the top-left rounded corner
+        titleBar.drawCircleHelper(x0 + radius, y0 + radius, radius, 1, borderColor);
 
-    // Draw the top-left rounded corner
-    canvas.drawCircleHelper(radius, radius, radius, 1, borderColor);
+        // Draw the top-right rounded corner
+        titleBar.drawCircleHelper(x0 + width - radius - 1, y0 + radius, radius, 2, borderColor);
 
-    // Draw the top-right rounded corner
-    canvas.drawCircleHelper(width - radius - 1, radius, radius, 2, borderColor);
+        // Draw the text
+        titleBar.setTextSize(1);
+        titleBar.setCursor(x0 + 5, y0 + (height - 1) / 2);
+        titleBar.print(AppManager::getInstance().getCurrentAppName().c_str());
+        titleBar.setTextColor(textColor);
 
-    // Draw the text
-    canvas.setTextSize(1);
-    canvas.setCursor(5, (height - 1) / 2);
-    canvas.print(text);
+        titleBar.pushSprite(0, 0);
+        xSemaphoreGive(canvasSemaphore);
+        // ESP_LOGI(TAG, "Imprimiu");
+    }
+}
+
+void TitleBar::configColors(int bgColor, int textColor, int borderColor) {
+    this->bgColor = bgColor;
+    this->textColor = textColor;
+    this->borderColor = borderColor;
 }

@@ -4,28 +4,36 @@
 #include <Arduino.h>
 #include <M5GFX.h>
 
-class TitleBar {
+#include "AppManager.h"
+#include "GlobalDisplay.h"
+#include "Globals.h"
+#include "Service.h"
+
+class TitleBar : public Service {
    public:
-    TitleBar(M5GFX* display);
+    TitleBar();
     ~TitleBar();
 
-    void begin(int x0, int y0, int x1, int y1);
+    void onServiceOpen() override;
+    void onServiceTick() override;
+    void onServiceClose() override;
+    void draw() override;
+    const uint8_t* getIcon() { return nullptr; }
+    size_t getIconSize() { return 0; }
+
     void configColors(int bgColor, int textColor, int borderColor);
-    void draw();
-    inline void setText(const char* text) { this->text = text; }
 
     inline int getX() const { return x0; }
     inline int getY() const { return y0; }
     inline int getWidth() const { return width; }
     inline int getHeight() const { return height; }
-    inline const uint16_t* getBuffer() const { return static_cast<const uint16_t*>(canvas.getBuffer()); }
 
    private:
-    M5GFX* display;
-    M5Canvas canvas;
-    const char* text;
+    M5Canvas titleBar;
+    static const char* TAG;
     int x0, y0, x1, y1, width, height;
     uint16_t bgColor, textColor, borderColor;
+    long int lastMillis;
 };
 
 #endif  // TITLEBAR_H
