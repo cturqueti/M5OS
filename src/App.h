@@ -13,8 +13,8 @@ class App {
     virtual ~App();
 
     virtual void onAppOpen() = 0;
-    virtual void onAppTick() = 0;  // Função de atualização do aplicativo
-    virtual void onAppClose() = 0;
+    virtual void onAppTick();  // Função de atualização do aplicativo
+    virtual void onAppClose();
     virtual void draw() = 0;  // Função de desenho do aplicativo
 
     // Getters e Setters
@@ -29,12 +29,19 @@ class App {
     virtual const uint8_t* getIcon() { return nullptr; };
     virtual size_t getIconSize() { return 0; };
 
+    inline bool isOpened() const { return isOpen; }      // Verifica se a aplicação está aberta
+    inline void setOpened(bool open) { isOpen = open; }  // Define o estado da aplicação
+    inline bool isClosed() const { return isClose; }
+    inline void setClosed(bool close) { isClose = close; }
+
    private:
     TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
     uint8_t priority;
     bool isRunning;
 
     std::string appName;
+    bool isOpen;
+    bool isClose;
 };
 
 #endif  // APP_H

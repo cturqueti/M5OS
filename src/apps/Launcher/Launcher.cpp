@@ -37,6 +37,7 @@ void Launcher::onAppOpen() {
     ESP_LOGI(TAG, "Iniciando delay de 800");
     printf("Iniciando Launcher.\n");
     nloop = 800;
+    setOpened(true);
 }
 
 void Launcher::onAppTick() {
@@ -45,16 +46,19 @@ void Launcher::onAppTick() {
         center.setTextColor(textColor);
         center.drawCenterString("No apps found", 120, 66);
         needRedraw = false;
+        ESP_LOGI(TAG, "Não foi encontrado APPs");
         return;
+    } else {
+        ESP_LOGI(TAG, "Foi encontrado APPs");
     }
-    // nloop -= 1;
-    // if (nloop % 10 == 0) {
-    //     ESP_LOGI(TAG, "Rodando");
-    // }
-    // // ESP_LOGI(TAG, "Fazendo algo no Launcher");
-    // if (nloop < 1) {
-    //     AppManager::getInstance().closeApp("Launcher");
-    // }
+    nloop -= 1;
+    if (nloop % 10 == 0) {
+        ESP_LOGI(TAG, "Rodando");
+    }
+    // ESP_LOGI(TAG, "Fazendo algo no Launcher");
+    if (nloop < 1) {
+        setClosed(true);
+    }
 }
 
 void Launcher::onAppClose() {
@@ -94,7 +98,7 @@ void Launcher::draw() {
         center.setCursor(x0 + 5, y0 + (height - 1) / 2);
         center.print("<");
         int textWidth = center.textWidth(">");
-        center.setCursor(x1 - textWidth - 1, y0 + (height - 1) / 2);
+        center.setCursor(x1 - textWidth - 2, y0 + (height - 1) / 2);
         center.print(">");
 
         xSemaphoreGive(canvasSemaphore);

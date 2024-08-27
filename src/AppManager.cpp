@@ -58,6 +58,7 @@ void AppManager::closeApp(const std::string& appName) {
         vTaskDelay(pdMS_TO_TICKS(10));
         if (taskHandle) {
             app->onAppClose();
+            // app->setClose(true);
             app->setTaskHandle(nullptr);  // Limpa o handle após excluir
             removeTaskByName(appName);
             // Tenta excluir a tarefa
@@ -77,6 +78,7 @@ void AppManager::closeCurrentApp() {
     if (!currentAppName.empty()) {
         if (currentApp) {
             currentApp->onAppClose();
+            // currentApp->setClose(true);
         }
         std::string appName = currentAppName;
         currentAppName = "";
@@ -103,17 +105,28 @@ void AppManager::switchToApp(const std::string& appName) {
 }
 
 void taskAppFunction(void* pvParameters) {
-    App* app = static_cast<App*>(pvParameters);
+    // App* app = static_cast<App*>(pvParameters);
+    auto params = static_cast<std::pair<AppManager*, App*>*>(pvParameters);
+    AppManager* appManager = params->first;
+    App* app = params->second;
+
     app->setTaskHandle(xTaskGetCurrentTaskHandle());
 
     ESP_LOGV(TAG, "Iniciando loop da task para: %s, ponteiro: %p", app->getAppName().c_str(), app->getTaskHandle());
 
-    while (true) {
+    while (!app->isOpened()) {
+        vTaskDelay(pdMS_TO_TICKS(10));  // Aguarda até que a aplicação esteja aberta
+    }
+
+    while (!app->isClosed()) {
         app->onAppTick();  // Chama a função de atualização do app
         app->draw();
         // ESP_LOGV(TAG, "Tick: %s", app->getAppName().c_str());
         vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
     }
+    appManager->closeApp(app->getAppName());
+
+    delete params;  // Libera memória alocada para params
 }
 
 void AppManager::startAppTask(const std::string& appName) {
@@ -123,12 +136,13 @@ void AppManager::startAppTask(const std::string& appName) {
 
     App* app = getApp(appName);
     if (app) {
+        auto* params = new std::pair<AppManager*, App*>(this, app);
         TaskHandle_t taskHandle = nullptr;
         xTaskCreatePinnedToCore(
             taskAppFunction,
             appName.c_str(),
             8192,                // Tamanho da stack
-            app,                 // Parâmetro passado para a função
+            params,              // Parâmetro passado para a função
             app->appPriority(),  // Prioridade
             &taskHandle,         // Handle da tarefa
             coreId);             // Executar no Core 1
@@ -146,6 +160,9 @@ void AppManager::startAppTask(const std::string& appName) {
             taskInfo.priority = app->appPriority();  // A prioridade pode ser ajustada conforme necessário
             taskInfo.coreId = coreId;
             taskTable.push_back(taskInfo);
+            app->setOpened(false);
+            app->setClosed(false);
+
             app->onAppOpen();
         } else {
             ESP_LOGE(TAG, "Falha ao criar a task para %s", appName.c_str());

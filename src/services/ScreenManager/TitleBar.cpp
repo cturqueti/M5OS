@@ -40,7 +40,7 @@ void TitleBar::draw() {
     int radius = 10;  // Radius for the rounded corners
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         // Draw the top horizontal line with rounded corners
-        titleBar.drawRect(x0, y0, width, height, bgColor);
+        titleBar.fillRect(x0, y0, width, height, bgColor);
         titleBar.drawLine(x0 + radius, y0, x0 + width - radius - 1, y0, borderColor);
 
         // Draw the vertical sides
