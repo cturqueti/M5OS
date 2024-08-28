@@ -15,12 +15,12 @@
 #include "apps/Calculadora/Calculadora.h"
 #include "apps/Launcher/Launcher.h"
 #include "apps/Settings/Settings.h"
+#include "services/Keyboard/Keyboard.h"
 #include "services/MqttManager/MqttManager.h"
 #include "services/SDManager/SDManager.h"
 #include "services/ScreenManager/ScreenManager.h"
 #include "services/ScreenManager/TitleBar.h"
 #include "services/WifiManager/WiFiManager.h"
-// #include "services/Keyboard/Keyboard.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
@@ -54,12 +54,14 @@ void setup() {
     serviceManager.addService("WiFiManager", new WiFiManager());
     serviceManager.addService("MqttManager", new MqttManager());
     serviceManager.addService("TitleBar", new TitleBar());
+    serviceManager.addService("Keyboard", new Keyboard());
     //  serviceManager.addService("ScreenManager", new ScreenManager());
 
     // serviceManager.openService("SDManager");
     // serviceManager.openService("WiFiManager");
     // serviceManager.openService("MqttManager"); //falta terminar
     serviceManager.openService("TitleBar");
+    serviceManager.openService("Keyboard");
 
     AppManager& appManager = AppManager::getInstance();
 

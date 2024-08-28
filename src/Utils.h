@@ -4,10 +4,6 @@
 
 #include <vector>
 
-#define KEY_UP ';'
-#define KEY_DOWN '.'
-#define KEY_LEFT ','
-#define KEY_RIGHT '/'
 
 struct TaskInfo {
     std::string appName;

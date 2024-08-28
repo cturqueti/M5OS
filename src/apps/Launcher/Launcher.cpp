@@ -49,16 +49,25 @@ void Launcher::onAppTick() {
         ESP_LOGI(TAG, "Não foi encontrado APPs");
         return;
     } else {
-        ESP_LOGI(TAG, "Foi encontrado APPs");
+        String iconPath = "/icons/" + apps[selectIndex] + ".png";
+        int x = ((240 - 75) / 2);
+        int y2 = ((135 - 75) / 2);
+        if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
+            center.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
+                           AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
+                           x, y2, 75, 75);
+        } else {
+            center.drawPng(m5os, 435, x + 5, y2 + 5, 75, 75, 0, 0, 2, 2);
+        }
     }
-    nloop -= 1;
-    if (nloop % 10 == 0) {
-        ESP_LOGI(TAG, "Rodando");
-    }
-    // ESP_LOGI(TAG, "Fazendo algo no Launcher");
-    if (nloop < 1) {
-        setClosed(true);
-    }
+    // nloop -= 1;
+    // if (nloop % 10 == 0) {
+    //     ESP_LOGI(TAG, "Rodando");
+    // }
+    // // ESP_LOGI(TAG, "Fazendo algo no Launcher");
+    // if (nloop < 1) {
+    //     setClosed(true);
+    // }
 }
 
 void Launcher::onAppClose() {
