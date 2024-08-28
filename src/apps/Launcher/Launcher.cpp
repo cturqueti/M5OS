@@ -4,12 +4,7 @@
 
 const char* Launcher::TAG = "Launcher";
 
-Launcher::Launcher() : x0(GlobalDisplay::getInstance().centerStruct.x0),
-                       y0(GlobalDisplay::getInstance().centerStruct.y0),
-                       x1(GlobalDisplay::getInstance().centerStruct.x1),
-                       y1(GlobalDisplay::getInstance().centerStruct.y1),
-                       width(GlobalDisplay::getInstance().centerStruct.width),
-                       height(GlobalDisplay::getInstance().centerStruct.height),
+Launcher::Launcher() : centerSizes(GlobalDisplay::getInstance().centerStruct),  // Referência para centerStruct
                        center(*GlobalDisplay::getInstance().getCanvas()),
                        lastMillis(millis()),
                        bgColor(TFT_BLACK),
@@ -80,34 +75,42 @@ void Launcher::onAppClose() {
 
 void Launcher::draw() {
     SemaphoreHandle_t canvasSemaphore = GlobalDisplay::getInstance().getSemaphore();
-    int centerX = width / 2;
-    int centerY = height / 2;
+    int centerX = centerWidth / 2;
+    int centerY = centerHeight / 2;
+
+    centerX0 = static_cast<int32_t>(centerSizes.x0);
+    centerY0 = static_cast<int32_t>(centerSizes.y0);  // or wherever centerY0 is set
+    centerX1 = static_cast<int32_t>(centerSizes.x1);
+    centerY1 = static_cast<int32_t>(centerSizes.y1);
+    centerWidth = static_cast<int32_t>(centerSizes.width);
+    centerHeight = static_cast<int32_t>(centerSizes.height);
+
     int radius = 10;  // Radius for the rounded corners
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         // Draw the top horizontal line with rounded corners
-        center.drawRect(x0, y0, width, height, bgColor);
-        center.drawLine(x0, y0, x0 + width - 1, y0, borderColor);
+        center.drawRect(centerX0, centerY0, centerWidth, centerHeight, bgColor);
+        center.drawLine(centerX0, centerY0, centerX0 + centerWidth - 1, centerY0, borderColor);
 
         // Draw the vertical sides
-        center.drawLine(x0, y0, x0, y0 + height - radius - 1, borderColor);                          // Left side
-        center.drawLine(x0 + width - 1, y0, x0 + width - 1, y0 + height - radius - 1, borderColor);  // Right side
+        center.drawLine(centerX0, centerY0, centerX0, centerY0 + centerHeight - radius - 1, borderColor);                                      // Left side
+        center.drawLine(centerX0 + centerWidth - 1, centerY0, centerX0 + centerWidth - 1, centerY0 + centerHeight - radius - 1, borderColor);  // Right side
 
         // Draw the bottom horizontal line
-        center.drawLine(x0 + radius, y0 + height - 1, x0 + width - radius - 1, y0 + height - 1, borderColor);
+        center.drawLine(centerX0 + radius, centerY0 + centerHeight - 1, centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - 1, borderColor);
 
         // Draw the bottom-left rounded corner
-        center.drawCircleHelper(x0 + radius, y0 + height - radius - 1, radius, 8, borderColor);
+        center.drawCircleHelper(centerX0 + radius, centerY0 + centerHeight - radius - 1, radius, 8, borderColor);
 
         // Draw the bottom-right rounded corner
-        center.drawCircleHelper(x0 + width - radius - 1, y0 + height - radius - 1, radius, 4, borderColor);
+        center.drawCircleHelper(centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - radius - 1, radius, 4, borderColor);
 
         // Draw the text
         center.setTextColor(textColor);
         center.setTextSize(2);
-        center.setCursor(x0 + 5, y0 + (height - 1) / 2);
+        center.setCursor(centerX0 + 5, centerY0 + (centerHeight - 1) / 2);
         center.print("<");
         int textWidth = center.textWidth(">");
-        center.setCursor(x1 - textWidth - 2, y0 + (height - 1) / 2);
+        center.setCursor(centerX1 - textWidth - 2, centerY0 + (centerHeight - 1) / 2);
         center.print(">");
 
         xSemaphoreGive(canvasSemaphore);

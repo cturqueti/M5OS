@@ -108,9 +108,10 @@ void taskServicesFunction(void* pvParameters) {
     ESP_LOGV(TAG, "Iniciando loop da task para: %s", service->getServiceName().c_str());
 
     while (true) {
-        service->onServiceTick();  // Chama a função de atualização do service
-                                   // service->draw(); // not used
-                                   // ESP_LOGV(TAG, "Tick: %s", service->getServiceName().c_str());
+        service->onServiceTick();
+        service->draw();  // Chama a função de atualização do service
+                          // service->draw(); // not used
+                          // ESP_LOGV(TAG, "Tick: %s", service->getServiceName().c_str());
         // UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
         // ESP_LOGI("StackMonitor", "Stack High Water Mark: %d", stackHighWaterMark);
         vTaskDelay(pdMS_TO_TICKS(100));  // Delay de 1s

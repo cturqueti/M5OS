@@ -21,14 +21,19 @@ class GlobalDisplay {
     M5Canvas canvas;
     M5Canvas titleBar;
     M5Canvas center;
+    M5Canvas footBar;
     SemaphoreHandle_t canvasSemaphore;
 
     M5Canvas* getCanvas() { return &canvas; }
     SemaphoreHandle_t getSemaphore() { return canvasSemaphore; }
 
     int titleBarHeight;
+    int footBarHeight;
     int borderColor;
-    window canvasStruct, titleBarStruct, centerStruct;
+    window canvasStruct, titleBarStruct, centerStruct, footBarStruct;
+
+    void footBarControl(bool show);
+    void footBarControl(bool show, int height);
 
    private:
     GlobalDisplay();
@@ -38,6 +43,8 @@ class GlobalDisplay {
     int borderSize;
     int borderRadius;
     int zoom;
+
+    static const char* TAG;
 
     // Delete copy constructor and assignment operator to enforce singleton pattern
     GlobalDisplay(const GlobalDisplay&) = delete;

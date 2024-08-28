@@ -5,12 +5,7 @@
 const char* TitleBar::TAG = "TitleBar";
 
 TitleBar::TitleBar()
-    : x0(GlobalDisplay::getInstance().titleBarStruct.x0),
-      y0(GlobalDisplay::getInstance().titleBarStruct.y0),
-      x1(GlobalDisplay::getInstance().titleBarStruct.x1),
-      y1(GlobalDisplay::getInstance().titleBarStruct.y1),
-      width(GlobalDisplay::getInstance().titleBarStruct.width),
-      height(GlobalDisplay::getInstance().titleBarStruct.height),
+    : titleBarSizes(GlobalDisplay::getInstance().titleBarStruct),
       titleBar(*GlobalDisplay::getInstance().getCanvas()),
       lastMillis(millis()),
       bgColor(TFT_BLACK),
@@ -22,14 +17,14 @@ TitleBar::~TitleBar() {
 }
 
 void TitleBar::onServiceOpen() {
-    draw();
+    // draw();
 }
 
 void TitleBar::onServiceTick() {
-    if (millis() - lastMillis > 200) {
-        lastMillis = millis();
-        draw();
-    }
+    // if (millis() - lastMillis > 200) {
+    //     lastMillis = millis();
+    //     draw();
+    // }
 }
 
 void TitleBar::onServiceClose() {}
@@ -38,31 +33,38 @@ void TitleBar::draw() {
     // Define border parameters
     SemaphoreHandle_t canvasSemaphore = GlobalDisplay::getInstance().getSemaphore();
     int radius = 10;  // Radius for the rounded corners
+    titleBarX0 = static_cast<int32_t>(titleBarSizes.x0);
+    titleBarY0 = static_cast<int32_t>(titleBarSizes.y0);  // or wherever titleBarY0 is set
+    titleBarX1 = static_cast<int32_t>(titleBarSizes.x1);
+    titleBarY1 = static_cast<int32_t>(titleBarSizes.y1);
+    titleBarWidth = static_cast<int32_t>(titleBarSizes.width);
+    titleBarHeight = static_cast<int32_t>(titleBarSizes.height);
+
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         // Draw the top horizontal line with rounded corners
-        titleBar.fillRect(x0, y0, width, height, bgColor);
-        titleBar.drawLine(x0 + radius, y0, x0 + width - radius - 1, y0, borderColor);
+        titleBar.fillRect(titleBarX0, titleBarY0, titleBarWidth, titleBarHeight, bgColor);
+        titleBar.drawLine(titleBarX0 + radius, titleBarY0, titleBarX0 + titleBarWidth - radius - 1, titleBarY0, borderColor);
 
         // Draw the vertical sides
-        titleBar.drawLine(x0, y0 + radius, x0, y0 + height - 1, borderColor);                          // Left side
-        titleBar.drawLine(x0 + width - 1, y0 + radius, x0 + width - 1, y0 + height - 1, borderColor);  // Right side
+        titleBar.drawLine(titleBarX0, titleBarY0 + radius, titleBarX0, titleBarY0 + titleBarHeight - 1, borderColor);                                          // Left side
+        titleBar.drawLine(titleBarX0 + titleBarWidth - 1, titleBarY0 + radius, titleBarX0 + titleBarWidth - 1, titleBarY0 + titleBarHeight - 1, borderColor);  // Right side
 
         // Draw the bottom horizontal line
-        titleBar.drawLine(x0, y0 + height - 1, x0 + width - 1, y0 + height - 1, borderColor);
+        // titleBar.drawLine(titleBarX0, titleBarY0 + titleBarHeight - 1, titleBarX0 + titleBarWidth - 1, titleBarY0 + titleBarHeight - 1, borderColor);
 
         // Draw the top-left rounded corner
-        titleBar.drawCircleHelper(x0 + radius, y0 + radius, radius, 1, borderColor);
+        titleBar.drawCircleHelper(titleBarX0 + radius, titleBarY0 + radius, radius, 1, borderColor);
 
         // Draw the top-right rounded corner
-        titleBar.drawCircleHelper(x0 + width - radius - 1, y0 + radius, radius, 2, borderColor);
+        titleBar.drawCircleHelper(titleBarX0 + titleBarWidth - radius - 1, titleBarY0 + radius, radius, 2, borderColor);
 
         // Draw the text
         titleBar.setTextSize(1);
-        titleBar.setCursor(x0 + 5, y0 + (height - 1) / 2);
+        titleBar.setCursor(titleBarX0 + 5, titleBarY0 + (titleBarHeight - 1) / 2);
         titleBar.print(AppManager::getInstance().getCurrentAppName().c_str());
         titleBar.setTextColor(textColor);
 
-        titleBar.pushSprite(0, 0);
+        // titleBar.pushSprite(0, 0);
         xSemaphoreGive(canvasSemaphore);
         // ESP_LOGI(TAG, "Imprimiu");
     }

@@ -34,32 +34,18 @@ void setup() {
 
     GlobalDisplay& globalsDisplay = GlobalDisplay::getInstance();
 
-    // auto cfg = m5::M5Unified::config();
-    // M5Cardputer.begin(cfg, true);
-    //  SPI2.begin(
-    // m5::M5Unified::getPin(m5::pin_name_t::sd_spi_sclk),
-    //      m5::M5Unified::getPin(m5::pin_name_t::sd_spi_miso),
-    //      m5::M5Unified::getPin(m5::pin_name_t::sd_spi_mosi),
-    //      m5::M5Unified::getPin(m5::pin_name_t::sd_spi_ss));
-    //  delay(1000);
-    //  if (!SD.begin(m5::M5Unified::getPin(m5::pin_name_t::sd_spi_ss), SPI2)) {
-    //      printf("SD Card Mount Failed\n");
-    //      printf("You don't need an SD anyway\n");
-    //  } else {
-    //      printf("MicroSd Ok\n");
-    //  }
-    // SDManager::getInstance().onServiceOpen();
     ServicesManager& serviceManager = ServicesManager::getInstance();
     serviceManager.addService("SDManager", new SDManager());
     serviceManager.addService("WiFiManager", new WiFiManager());
     serviceManager.addService("MqttManager", new MqttManager());
     serviceManager.addService("TitleBar", new TitleBar());
     serviceManager.addService("Keyboard", new Keyboard());
-    //  serviceManager.addService("ScreenManager", new ScreenManager());
+    serviceManager.addService("ScreenManager", new ScreenManager());
 
     // serviceManager.openService("SDManager");
     // serviceManager.openService("WiFiManager");
     // serviceManager.openService("MqttManager"); //falta terminar
+    serviceManager.openService("ScreenManager");
     serviceManager.openService("TitleBar");
     serviceManager.openService("Keyboard");
 
@@ -71,8 +57,8 @@ void setup() {
     appManager.addApp("Launcher", new Launcher());
 
     // servicesManager.openService("Keyboard");
-    appManager.openApp("Launcher");
-    // appManager.openApp("Settings");
+    // appManager.openApp("Launcher");
+    appManager.openApp("Calculadora");
 }
 
 void loop() {

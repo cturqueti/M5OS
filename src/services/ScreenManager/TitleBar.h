@@ -23,17 +23,25 @@ class TitleBar : public Service {
 
     void configColors(int bgColor, int textColor, int borderColor);
 
-    inline int getX() const { return x0; }
-    inline int getY() const { return y0; }
-    inline int getWidth() const { return width; }
-    inline int getHeight() const { return height; }
+    inline int getX() const { return titleBarX0; }
+    inline int getY() const { return titleBarY0; }
+    inline int getWidth() const { return titleBarWidth; }
+    inline int getHeight() const { return titleBarHeight; }
 
    private:
     M5Canvas titleBar;
     static const char* TAG;
-    int x0, y0, x1, y1, width, height;
+
     uint16_t bgColor, textColor, borderColor;
     long int lastMillis;
+    window& titleBarSizes;
+
+    int32_t titleBarX0 = static_cast<int32_t>(titleBarSizes.x0);
+    int32_t titleBarY0 = static_cast<int32_t>(titleBarSizes.y0);  // or wherever y0 is set
+    int32_t titleBarX1 = static_cast<int32_t>(titleBarSizes.x1);
+    int32_t titleBarY1 = static_cast<int32_t>(titleBarSizes.y1);
+    int32_t titleBarWidth = static_cast<int32_t>(titleBarSizes.width);
+    int32_t titleBarHeight = static_cast<int32_t>(titleBarSizes.height);
 };
 
 #endif  // TITLEBAR_H
