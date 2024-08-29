@@ -13,6 +13,9 @@ ScreenManager::~ScreenManager() {
 }
 
 void ScreenManager::onServiceOpen() {
+    // if (xSemaphoreTake(onServiceOpenSemaphore, portMAX_DELAY) == pdTRUE) {
+    //     xSemaphoreGive(onServiceOpenSemaphore);
+    // }
 }
 
 void ScreenManager::onServiceTick() {

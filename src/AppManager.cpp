@@ -114,9 +114,13 @@ void taskAppFunction(void* pvParameters) {
 
     ESP_LOGV(TAG, "Iniciando loop da task para: %s, ponteiro: %p", app->getAppName().c_str(), app->getTaskHandle());
 
-    while (!app->isOpened()) {
-        vTaskDelay(pdMS_TO_TICKS(10));  // Aguarda até que a aplicação esteja aberta
+    app->isOpened();
+    if (xSemaphoreTake(app->onAppOpenSemaphore, portMAX_DELAY) == pdTRUE) {
+        xSemaphoreGive(app->onAppOpenSemaphore);
     }
+    // while (!app->isOpened()) {
+    //     vTaskDelay(pdMS_TO_TICKS(10));  // Aguarda até que a aplicação esteja aberta
+    // }
 
     while (!app->isClosed()) {
         app->onAppTick();  // Chama a função de atualização do app

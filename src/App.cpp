@@ -4,10 +4,18 @@
 static const char* TAG = "App";
 
 // Construtor
-App::App() : isOpen(false), isClose(false), taskHandle(nullptr), isRunning(false), appName(""), priority(99) {}
+App::App() : isOpen(false), isClose(false), taskHandle(nullptr), isRunning(false), appName(""), priority(99) {
+    onAppOpenSemaphore = xSemaphoreCreateMutex();
+    if (onAppOpenSemaphore == nullptr) {
+        ESP_LOGE(TAG, "Falha ao criar o semáforo onAppOpenSemaphore");
+    }
+}
 
 // Destrutor
 App::~App() {
+    if (onAppOpenSemaphore != nullptr) {
+        vSemaphoreDelete(onAppOpenSemaphore);
+    }
 }
 
 void App::onAppTick() {

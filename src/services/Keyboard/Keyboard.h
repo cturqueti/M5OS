@@ -2,10 +2,13 @@
 #define KEYBOARD_H
 
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <string>
 #include <vector>
 
+#include "Globals.h"
 #include "Keymap.h"
 #include "Service.h"
 #include "ServicesManager.h"

@@ -2,6 +2,8 @@
 #define SERVICES_MANAGER_H
 
 #include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <algorithm>
 #include <map>
@@ -12,6 +14,8 @@
 #include "Utils.h"
 
 #pragma once
+
+// extern SemaphoreHandle_t onServiceOpenSemaphore;
 
 class ServicesManager {
    public:
@@ -46,6 +50,7 @@ class ServicesManager {
 
     std::map<std::string, Service*> services;  // Mapeia nomes de serviços para instâncias
     static std::vector<TaskInfo> taskTable;
+    SemaphoreHandle_t serviceSemaphore;
     std::string currentServiceName;
     Service* currentService;
 

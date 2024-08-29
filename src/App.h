@@ -20,7 +20,7 @@ class App {
     // Getters e Setters
     inline TaskHandle_t getTaskHandle() const { return taskHandle; };
     inline void setTaskHandle(TaskHandle_t handle) { taskHandle = handle; };
-    inline bool isTaskRunning() const { return isRunning; };
+    // inline bool isTaskRunning() const { return isRunning; };
 
     inline std::string getAppName() const { return appName; }
     inline void setAppName(const std::string& name) { appName = name; }
@@ -34,12 +34,15 @@ class App {
     inline bool isClosed() const { return isClose; }
     inline void setClosed(bool close) { isClose = close; }
 
+    SemaphoreHandle_t onAppOpenSemaphore;
+
    private:
     TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
+    std::string appName;
+
     uint8_t priority;
     bool isRunning;
 
-    std::string appName;
     bool isOpen;
     bool isClose;
 };

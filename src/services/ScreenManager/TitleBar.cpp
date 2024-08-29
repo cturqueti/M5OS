@@ -17,6 +17,9 @@ TitleBar::~TitleBar() {
 }
 
 void TitleBar::onServiceOpen() {
+    // if (xSemaphoreTake(onServiceOpenSemaphore, portMAX_DELAY) == pdTRUE) {
+    //     xSemaphoreGive(onServiceOpenSemaphore);
+    // }
     // draw();
 }
 

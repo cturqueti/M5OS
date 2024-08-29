@@ -25,6 +25,9 @@ Keyboard::~Keyboard() {
 }
 
 void Keyboard::onServiceOpen() {
+    // if (xSemaphoreTake(ServicesManager::getInstance().onServiceOpenSemaphore, portMAX_DELAY) == pdTRUE) {
+    //     xSemaphoreGive(ServicesManager::getInstance().onServiceOpenSemaphore);
+    // }
     // tempCanvas.createSprite(30, 13);
     // tempCanvas.fillSprite(TFT_GREEN);
 }

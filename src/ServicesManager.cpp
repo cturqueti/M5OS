@@ -8,12 +8,23 @@ static const char* TAG = "ServiceManager";
 
 std::vector<TaskInfo> ServicesManager::taskTable;
 
-ServicesManager::ServicesManager() : currentServiceName(""), currentService(nullptr), core0Tasks(0), core1Tasks(0) {}
+ServicesManager::ServicesManager() : currentServiceName(""),
+                                     currentService(nullptr),
+                                     core0Tasks(0),
+                                     core1Tasks(0) {
+    serviceSemaphore = xSemaphoreCreateMutex();
+    if (serviceSemaphore == nullptr) {
+        ESP_LOGE(TAG, "Falha ao criar o semáforo serviceSemaphore");
+    }
+}
 
 ServicesManager::~ServicesManager() {
     removeCurrentService();
     for (auto& service : services) {
         delete service.second;  // Libera memória dos serviços
+    }
+    if (serviceSemaphore != nullptr) {
+        vSemaphoreDelete(serviceSemaphore);
     }
 }
 
@@ -102,10 +113,20 @@ void ServicesManager::switchToService(const std::string& serviceName) {
 }
 
 void taskServicesFunction(void* pvParameters) {
-    Service* service = static_cast<Service*>(pvParameters);
+    auto params = static_cast<std::pair<ServicesManager*, Service*>*>(pvParameters);
+    ServicesManager* serviceManager = params->first;
+    Service* service = params->second;
+
     service->setTaskHandle(xTaskGetCurrentTaskHandle());
 
     ESP_LOGV(TAG, "Iniciando loop da task para: %s", service->getServiceName().c_str());
+
+    // if (xSemaphoreTake(service->onServiceOpenSemaphore, portMAX_DELAY) == pdTRUE) {
+    //     xSemaphoreGive(service->onServiceOpenSemaphore);
+    // }
+    service->onServiceOpen();
+
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     while (true) {
         service->onServiceTick();
@@ -125,12 +146,13 @@ void ServicesManager::startServiceTask(const std::string& serviceName) {
 
     Service* service = getService(serviceName);
     if (service) {
+        auto* params = new std::pair<ServicesManager*, Service*>(this, service);
         TaskHandle_t taskHandle = nullptr;
         xTaskCreatePinnedToCore(
             taskServicesFunction,
             serviceName.c_str(),
             8192,                        // Tamanho da stack
-            service,                     // Parâmetro passado para a função
+            params,                      // Parâmetro passado para a função
             service->servicePriority(),  // Prioridade
             &taskHandle,                 // Handle da tarefa
             coreId);                     // Executar no Core 1
@@ -148,7 +170,7 @@ void ServicesManager::startServiceTask(const std::string& serviceName) {
             taskInfo.priority = service->servicePriority();  // A prioridade pode ser ajustada conforme necessário
             taskInfo.coreId = coreId;
             taskTable.push_back(taskInfo);
-            service->onServiceOpen();
+
         } else {
             ESP_LOGE(TAG, "Falha ao criar a task para %s", serviceName.c_str());
         }
