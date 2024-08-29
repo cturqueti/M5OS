@@ -34,14 +34,15 @@ class TitleBar : public Service {
 
     uint16_t bgColor, textColor, borderColor;
     long int lastMillis;
-    window& titleBarSizes;
+    window* titleBarSizes;
 
-    int32_t titleBarX0 = static_cast<int32_t>(titleBarSizes.x0);
-    int32_t titleBarY0 = static_cast<int32_t>(titleBarSizes.y0);  // or wherever y0 is set
-    int32_t titleBarX1 = static_cast<int32_t>(titleBarSizes.x1);
-    int32_t titleBarY1 = static_cast<int32_t>(titleBarSizes.y1);
-    int32_t titleBarWidth = static_cast<int32_t>(titleBarSizes.width);
-    int32_t titleBarHeight = static_cast<int32_t>(titleBarSizes.height);
+    int32_t titleBarX0 = static_cast<int32_t>(titleBarSizes->x0);
+    int32_t titleBarY0 = static_cast<int32_t>(titleBarSizes->y0);  // or wherever y0 is set
+    int32_t titleBarX1 = static_cast<int32_t>(titleBarSizes->x1);
+    int32_t titleBarY1 = static_cast<int32_t>(titleBarSizes->y1);
+    int32_t titleBarWidth = static_cast<int32_t>(titleBarSizes->width);
+    int32_t titleBarHeight = static_cast<int32_t>(titleBarSizes->height);
+    void clearTitleBar();
 };
 
 #endif  // TITLEBAR_H

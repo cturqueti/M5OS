@@ -5,7 +5,7 @@
 const char* Launcher::TAG = "Launcher";
 
 Launcher::Launcher() : centerSizes(&GlobalDisplay::getInstance().centerStruct),  // Referência para centerStruct
-                       center(*GlobalDisplay::getInstance().getCanvas()),
+                       canvas(*GlobalDisplay::getInstance().getCanvas()),
                        lastMillis(millis()),
                        bgColor(TFT_BLACK),
                        textColor(TFT_WHITE),
@@ -36,10 +36,15 @@ void Launcher::onAppOpen() {
 }
 
 void Launcher::onAppTick() {
+    SemaphoreHandle_t canvasSemaphore = GlobalDisplay::getInstance().getSemaphore();
+
     if (apps.empty()) {
-        center.setTextSize(2);
-        center.setTextColor(textColor);
-        center.drawCenterString("No apps found", 120, 66);
+        if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+            canvas.setTextSize(2);
+            canvas.setTextColor(textColor);
+            canvas.drawCenterString("No apps found", 120, 66);
+            xSemaphoreGive(canvasSemaphore);
+        }
         needRedraw = false;
         ESP_LOGI(TAG, "Não foi encontrado APPs");
         return;
@@ -47,12 +52,15 @@ void Launcher::onAppTick() {
         String iconPath = "/icons/" + apps[selectIndex] + ".png";
         int x = ((240 - 75) / 2);
         int y2 = ((135 - 75) / 2);
-        if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
-            center.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
-                           AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
-                           x, y2, 75, 75);
-        } else {
-            center.drawPng(m5os, 435, x + 5, y2 + 5, 75, 75, 0, 0, 2, 2);
+        if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+            if (AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize() != 0) {
+                canvas.drawPng(AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIcon(),
+                               AppManager::getInstance().getApp(apps[selectIndex].c_str())->getIconSize(),
+                               x, y2, 75, 75);
+            } else {
+                canvas.drawPng(m5os, 435, x + 5, y2 + 5, 75, 75, 0, 0, 2, 2);
+            }
+            xSemaphoreGive(canvasSemaphore);
         }
     }
     // nloop -= 1;
@@ -88,32 +96,40 @@ void Launcher::draw() {
     int radius = 10;  // Radius for the rounded corners
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
         // Draw the top horizontal line with rounded corners
-        center.drawRect(centerX0, centerY0, centerWidth, centerHeight, bgColor);
-        center.drawLine(centerX0, centerY0, centerX0 + centerWidth - 1, centerY0, borderColor);
+        canvas.drawRect(centerX0, centerY0, centerWidth, centerHeight, bgColor);
+        canvas.drawLine(centerX0, centerY0, centerX0 + centerWidth - 1, centerY0, borderColor);
 
         // Draw the vertical sides
-        center.drawLine(centerX0, centerY0, centerX0, centerY0 + centerHeight - radius - 1, borderColor);                                      // Left side
-        center.drawLine(centerX0 + centerWidth - 1, centerY0, centerX0 + centerWidth - 1, centerY0 + centerHeight - radius - 1, borderColor);  // Right side
+        canvas.drawLine(centerX0, centerY0, centerX0, centerY0 + centerHeight - radius - 1, borderColor);                                      // Left side
+        canvas.drawLine(centerX0 + centerWidth - 1, centerY0, centerX0 + centerWidth - 1, centerY0 + centerHeight - radius - 1, borderColor);  // Right side
 
         // Draw the bottom horizontal line
-        center.drawLine(centerX0 + radius, centerY0 + centerHeight - 1, centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - 1, borderColor);
+        canvas.drawLine(centerX0 + radius, centerY0 + centerHeight - 1, centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - 1, borderColor);
 
         // Draw the bottom-left rounded corner
-        center.drawCircleHelper(centerX0 + radius, centerY0 + centerHeight - radius - 1, radius, 8, borderColor);
+        canvas.drawCircleHelper(centerX0 + radius, centerY0 + centerHeight - radius - 1, radius, 8, borderColor);
 
         // Draw the bottom-right rounded corner
-        center.drawCircleHelper(centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - radius - 1, radius, 4, borderColor);
+        canvas.drawCircleHelper(centerX0 + centerWidth - radius - 1, centerY0 + centerHeight - radius - 1, radius, 4, borderColor);
 
         // Draw the text
-        center.setTextColor(textColor);
-        center.setTextSize(2);
-        center.setCursor(centerX0 + 5, centerY0 + (centerHeight - 1) / 2);
-        center.print("<");
-        int textWidth = center.textWidth(">");
-        center.setCursor(centerX1 - textWidth - 2, centerY0 + (centerHeight - 1) / 2);
-        center.print(">");
+        canvas.setTextColor(textColor);
+        canvas.setTextSize(2);
+        canvas.setCursor(centerX0 + 5, centerY0 + (centerHeight - 1) / 2);
+        canvas.print("<");
+        int textWidth = canvas.textWidth(">");
+        canvas.setCursor(centerX1 - textWidth - 2, centerY0 + (centerHeight - 1) / 2);
+        canvas.print(">");
 
         xSemaphoreGive(canvasSemaphore);
         // ESP_LOGI(TAG, "Imprimiu");
+    }
+}
+
+void Launcher::clearCenter() {
+    SemaphoreHandle_t canvasSemaphore = GlobalDisplay::getInstance().getSemaphore();
+    if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
+        canvas.fillRect(centerX0, centerY0, centerWidth, centerHeight, bgColor);
+        xSemaphoreGive(canvasSemaphore);
     }
 }
