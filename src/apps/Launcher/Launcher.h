@@ -32,7 +32,7 @@ class Launcher : public App {
     int selectIndex;
     bool needRedraw;
     std::vector<String> apps;
-    window& centerSizes;
+    window* centerSizes;
 
     int32_t centerX0 = static_cast<int32_t>(centerSizes.x0);
     int32_t centerY0 = static_cast<int32_t>(centerSizes.y0);  // or wherever y0 is set

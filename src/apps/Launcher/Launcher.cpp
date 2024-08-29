@@ -4,7 +4,7 @@
 
 const char* Launcher::TAG = "Launcher";
 
-Launcher::Launcher() : centerSizes(GlobalDisplay::getInstance().centerStruct),  // Referência para centerStruct
+Launcher::Launcher() : centerSizes(&GlobalDisplay::getInstance().centerStruct),  // Referência para centerStruct
                        center(*GlobalDisplay::getInstance().getCanvas()),
                        lastMillis(millis()),
                        bgColor(TFT_BLACK),
@@ -78,12 +78,12 @@ void Launcher::draw() {
     int centerX = centerWidth / 2;
     int centerY = centerHeight / 2;
 
-    centerX0 = static_cast<int32_t>(centerSizes.x0);
-    centerY0 = static_cast<int32_t>(centerSizes.y0);  // or wherever centerY0 is set
-    centerX1 = static_cast<int32_t>(centerSizes.x1);
-    centerY1 = static_cast<int32_t>(centerSizes.y1);
-    centerWidth = static_cast<int32_t>(centerSizes.width);
-    centerHeight = static_cast<int32_t>(centerSizes.height);
+    centerX0 = static_cast<int32_t>(centerSizes->x0);
+    centerY0 = static_cast<int32_t>(centerSizes->y0);  // or wherever centerY0 is set
+    centerX1 = static_cast<int32_t>(centerSizes->x1);
+    centerY1 = static_cast<int32_t>(centerSizes->y1);
+    centerWidth = static_cast<int32_t>(centerSizes->width);
+    centerHeight = static_cast<int32_t>(centerSizes->height);
 
     int radius = 10;  // Radius for the rounded corners
     if (xSemaphoreTake(canvasSemaphore, portMAX_DELAY) == pdTRUE) {
