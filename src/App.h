@@ -29,22 +29,33 @@ class App {
     virtual const uint8_t* getIcon() { return nullptr; };
     virtual size_t getIconSize() { return 0; };
 
-    inline bool isOpened() const { return isOpen; }      // Verifica se a aplicação está aberta
-    inline void setOpened(bool open) { isOpen = open; }  // Define o estado da aplicação
-    inline bool isClosed() const { return isClose; }
-    inline void setClosed(bool close) { isClose = close; }
+    // inline bool isOpened() const { return isOpen; }      // Verifica se a aplicação está aberta
+    // inline void setOpened(bool open) { isOpen = open; }  // Define o estado da aplicação
+    // inline bool isClosed() const { return isClose; }
+    // inline void setClosed(bool close) { isClose = close; }
 
-    SemaphoreHandle_t onAppOpenSemaphore;
+    void setStarted(bool status) { _start = status; }
+    void setOpened(bool status) { _open = status; }
+    void setClosed(bool status) { _close = status; }
+    void setPaused(bool status) { _pause = status; }
+    void setOnTop(bool status) { _onTop = status; }
+    bool isStarted() { return _start; }
+    bool isOpened() { return _open; }
+    bool isClosed() { return _close; }
+    bool isPaused() { return _pause; }
+    bool isOnTop() { return _onTop; }
 
    private:
     TaskHandle_t taskHandle;  // Membro protegido para o handle da tarefa
     std::string appName;
 
     uint8_t priority;
-    bool isRunning;
+    // bool isRunning;
 
-    bool isOpen;
-    bool isClose;
+    // bool isOpen;
+    // bool isClose;
+    bool _start, _open, _close, _pause;
+    bool _onTop;
 };
 
 #endif  // APP_H

@@ -107,30 +107,49 @@ void AppManager::switchToApp(const std::string& appName) {
 void taskAppFunction(void* pvParameters) {
     // App* app = static_cast<App*>(pvParameters);
     auto params = static_cast<std::pair<AppManager*, App*>*>(pvParameters);
+
+    if (!params) {
+        ESP_LOGE(TAG, "Parâmetros nulos recebidos");
+        vTaskDelete(nullptr);  // Exclui a própria tarefa se os parâmetros forem nulos
+        return;
+    }
+
     AppManager* appManager = params->first;
     App* app = params->second;
 
     app->setTaskHandle(xTaskGetCurrentTaskHandle());
 
     ESP_LOGV(TAG, "Iniciando loop da task para: %s, ponteiro: %p", app->getAppName().c_str(), app->getTaskHandle());
+    app->setStarted(true);
 
-    app->isOpened();
-    if (xSemaphoreTake(app->onAppOpenSemaphore, portMAX_DELAY) == pdTRUE) {
-        xSemaphoreGive(app->onAppOpenSemaphore);
+    if (xSemaphoreTake(appManager->appSemaphore, portMAX_DELAY) == pdTRUE) {
+        app->onAppOpen();
+        app->setOpened(true);
+        xSemaphoreGive(appManager->appSemaphore);
     }
-    // while (!app->isOpened()) {
-    //     vTaskDelay(pdMS_TO_TICKS(10));  // Aguarda até que a aplicação esteja aberta
-    // }
+
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     while (!app->isClosed()) {
-        app->onAppTick();  // Chama a função de atualização do app
-        app->draw();
-        // ESP_LOGV(TAG, "Tick: %s", app->getAppName().c_str());
-        vTaskDelay(pdMS_TO_TICKS(15));  // Delay de 15ms
-    }
-    appManager->closeApp(app->getAppName());
+        if (!app->isPaused()) {
+            app->onAppTick();
+            if (app->getAppName() == appManager->getCurrentAppName()) {
+                app->draw();
+                app->setOnTop(true);
+            } else {
+                app->setOnTop(false);
+            }
 
-    delete params;  // Libera memória alocada para params
+        }  // Chama a função de atualização do service
+        vTaskDelay(pdMS_TO_TICKS(50));  // Delay de 1s
+    }
+
+    app->onAppClose();
+    app->setTaskHandle(nullptr);  // Limpa o handle após excluir
+    appManager->removeTaskByName(app->getAppName());
+
+    delete params;
+    vTaskDelete(nullptr);
 }
 
 void AppManager::startAppTask(const std::string& appName) {
@@ -164,10 +183,9 @@ void AppManager::startAppTask(const std::string& appName) {
             taskInfo.priority = app->appPriority();  // A prioridade pode ser ajustada conforme necessário
             taskInfo.coreId = coreId;
             taskTable.push_back(taskInfo);
-            app->setOpened(false);
-            app->setClosed(false);
+            // app->setOpened(false);
+            // app->setClosed(false);
 
-            app->onAppOpen();
         } else {
             ESP_LOGE(TAG, "Falha ao criar a task para %s", appName.c_str());
         }

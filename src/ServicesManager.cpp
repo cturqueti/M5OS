@@ -19,7 +19,7 @@ ServicesManager::ServicesManager() : currentServiceName(""),
 }
 
 ServicesManager::~ServicesManager() {
-    removeCurrentService();
+    closeCurrentService();
     for (auto& service : services) {
         delete service.second;  // Libera memória dos serviços
     }
@@ -57,7 +57,7 @@ void ServicesManager::openService(const std::string& serviceName) {
     }
 }
 
-void ServicesManager::removeService(const std::string& serviceName) {
+void ServicesManager::closeService(const std::string& serviceName) {
     ESP_LOGI(TAG, "Tentando fechar o serviço %s", serviceName.c_str());
 
     Service* service = getService(serviceName);
@@ -83,7 +83,7 @@ void ServicesManager::removeService(const std::string& serviceName) {
     }
 }
 
-void ServicesManager::removeCurrentService() {
+void ServicesManager::closeCurrentService() {
     if (!currentServiceName.empty()) {
         if (currentService) {
             currentService->onServiceClose();
@@ -91,7 +91,7 @@ void ServicesManager::removeCurrentService() {
         std::string serviceName = currentServiceName;
         currentServiceName = "";
         currentService = nullptr;
-        removeService(serviceName);
+        closeService(serviceName);
 
         if (!taskTable.empty()) {
             auto it = taskTable.begin();
@@ -114,6 +114,13 @@ void ServicesManager::switchToService(const std::string& serviceName) {
 
 void taskServicesFunction(void* pvParameters) {
     auto params = static_cast<std::pair<ServicesManager*, Service*>*>(pvParameters);
+
+    if (!params) {
+        ESP_LOGE(TAG, "Parâmetros nulos recebidos");
+        vTaskDelete(nullptr);  // Exclui a própria tarefa se os parâmetros forem nulos
+        return;
+    }
+
     ServicesManager* serviceManager = params->first;
     Service* service = params->second;
 
@@ -121,22 +128,30 @@ void taskServicesFunction(void* pvParameters) {
 
     ESP_LOGV(TAG, "Iniciando loop da task para: %s", service->getServiceName().c_str());
 
-    // if (xSemaphoreTake(service->onServiceOpenSemaphore, portMAX_DELAY) == pdTRUE) {
-    //     xSemaphoreGive(service->onServiceOpenSemaphore);
-    // }
-    service->onServiceOpen();
+    service->setStarted(true);
+
+    if (xSemaphoreTake(serviceManager->serviceSemaphore, portMAX_DELAY) == pdTRUE) {
+        service->onServiceOpen();
+        service->setOpened(true);
+        xSemaphoreGive(serviceManager->serviceSemaphore);
+    }
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    while (true) {
-        service->onServiceTick();
-        service->draw();  // Chama a função de atualização do service
-                          // service->draw(); // not used
-                          // ESP_LOGV(TAG, "Tick: %s", service->getServiceName().c_str());
-        // UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        // ESP_LOGI("StackMonitor", "Stack High Water Mark: %d", stackHighWaterMark);
-        vTaskDelay(pdMS_TO_TICKS(100));  // Delay de 1s
+    while (!service->isClosed()) {
+        if (!service->isPaused()) {
+            service->onServiceTick();
+            service->draw();
+        }  // Chama a função de atualização do service
+        vTaskDelay(pdMS_TO_TICKS(50));  // Delay de 1s
     }
+
+    service->onServiceClose();
+    service->setTaskHandle(nullptr);  // Limpa o handle após excluir
+    serviceManager->removeTaskByName(service->getServiceName());
+
+    delete params;
+    vTaskDelete(nullptr);  // Deleta a própria tarefa
 }
 
 void ServicesManager::startServiceTask(const std::string& serviceName) {

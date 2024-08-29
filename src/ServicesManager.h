@@ -26,8 +26,8 @@ class ServicesManager {
 
     void addService(const std::string& serviceName, Service* service);
     void openService(const std::string& name);
-    void removeService(const std::string& name);
-    void removeCurrentService();
+    void closeService(const std::string& name);
+    void closeCurrentService();
 
     void startServiceTask(const std::string& appName);
     Service* getService(const std::string& serviceName);
@@ -37,12 +37,16 @@ class ServicesManager {
 
     void printDebugInfo();
 
+    SemaphoreHandle_t serviceSemaphore;
+
+    bool removeTaskByName(const std::string& name);
+
    private:
     ServicesManager();
     ~ServicesManager();
 
     TaskInfo* findTaskByName(const std::string& name);
-    bool removeTaskByName(const std::string& name);
+
     void countTasksPerCore(const std::vector<TaskInfo>& taskTable);
 
     UBaseType_t core0Tasks = 0;
@@ -50,7 +54,7 @@ class ServicesManager {
 
     std::map<std::string, Service*> services;  // Mapeia nomes de serviços para instâncias
     static std::vector<TaskInfo> taskTable;
-    SemaphoreHandle_t serviceSemaphore;
+
     std::string currentServiceName;
     Service* currentService;
 

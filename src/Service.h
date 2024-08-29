@@ -27,11 +27,21 @@ class Service {
 
     virtual int servicePriority() const { return priority; }  // Pode ser sobrescrito
 
-      protected:
+    void setStarted(bool status) { _start = status; }
+    void setOpened(bool status) { _open = status; }
+    void setClosed(bool status) { _close = status; }
+    void setPaused(bool status) { _pause = status; }
+    bool isStarted() { return _start; }
+    bool isOpened() { return _open; }
+    bool isClosed() { return _close; }
+    bool isPaused() { return _pause; }
+
+   private:
     uint8_t priority;
     bool isRunning;
     static TaskHandle_t taskHandle;
     std::string serviceName;
+    bool _start, _open, _close, _pause;
 };
 
 #endif  // APP_H

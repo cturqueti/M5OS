@@ -38,12 +38,16 @@ class AppManager {
 
     void printDebugInfo();
 
+    SemaphoreHandle_t appSemaphore;
+
+    bool removeTaskByName(const std::string& name);
+
    private:
     AppManager();
     ~AppManager();
 
     TaskInfo* findTaskByName(const std::string& name);
-    bool removeTaskByName(const std::string& name);
+
     void countTasksPerCore(const std::vector<TaskInfo>& taskTable);
 
     UBaseType_t core0Tasks = 0;

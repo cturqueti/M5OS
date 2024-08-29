@@ -4,18 +4,16 @@
 static const char* TAG = "App";
 
 // Construtor
-App::App() : isOpen(false), isClose(false), taskHandle(nullptr), isRunning(false), appName(""), priority(99) {
-    onAppOpenSemaphore = xSemaphoreCreateMutex();
-    if (onAppOpenSemaphore == nullptr) {
-        ESP_LOGE(TAG, "Falha ao criar o semáforo onAppOpenSemaphore");
-    }
+App::App() : appName(""),
+             priority(99),
+             _start(false),
+             _open(false),
+             _close(false),
+             _pause(false) {
 }
 
 // Destrutor
 App::~App() {
-    if (onAppOpenSemaphore != nullptr) {
-        vSemaphoreDelete(onAppOpenSemaphore);
-    }
 }
 
 void App::onAppTick() {
@@ -33,6 +31,6 @@ void App::onAppClose() {
         return;
     }
     // Lógica para quando o aplicativo for fechado
-    isClose = true;  // Marcar o aplicativo como fechado
+    _close = true;  // Marcar o aplicativo como fechado
     ESP_LOGI(TAG, "Aplicativo %s foi fechado", appName.c_str());
 }

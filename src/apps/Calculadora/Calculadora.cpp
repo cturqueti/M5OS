@@ -15,20 +15,17 @@ Calculadora::~Calculadora() {
 }
 
 void Calculadora::onAppOpen() {
-    if (xSemaphoreTake(onAppOpenSemaphore, portMAX_DELAY) == pdTRUE) {
-        nloop = 800;
+    nloop = 800;
 
-        ESP_LOGI(TAG, "Iniciando delay de 800");
+    ESP_LOGI(TAG, "Iniciando delay de 800");
 
-        const uint8_t* icon = getIcon();
-        if (icon) {
-            printf("Ícone carregado com sucesso.\n");
-        } else {
-            printf("Erro ao carregar ícone.\n");
-        }
-        setOpened(true);
-        xSemaphoreGive(onAppOpenSemaphore);
+    const uint8_t* icon = getIcon();
+    if (icon) {
+        printf("Ícone carregado com sucesso.\n");
+    } else {
+        printf("Erro ao carregar ícone.\n");
     }
+    setOpened(true);
 }
 
 void Calculadora::onAppTick() {
