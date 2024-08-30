@@ -4,11 +4,11 @@
 
 #include <vector>
 
-
 struct TaskInfo {
     std::string appName;
     UBaseType_t priority;
     uint8_t coreId;
+    uint32_t showOrder;
 };
 
 struct LCDPin {

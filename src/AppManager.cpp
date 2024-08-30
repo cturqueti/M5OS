@@ -8,13 +8,25 @@ static const char* TAG = "AppManager";
 
 std::vector<TaskInfo> AppManager::taskTable;
 
-AppManager::AppManager() : currentAppName(""), currentApp(nullptr), core0Tasks(0), core1Tasks(0) {
+AppManager::AppManager() : currentApp(nullptr),
+                           core0Tasks(0),
+                           core1Tasks(0) {
+    appSemaphore = xSemaphoreCreateMutex();
+    if (appSemaphore == nullptr) {
+        ESP_LOGE(TAG, "Falha ao criar o semáforo serviceSemaphore");
+    }
+    taskTableSemaphore = xSemaphoreCreateMutex();
+    if (taskTableSemaphore == nullptr) {
+        ESP_LOGE(TAG, "Falha ao criar o semáforo taskTableSemaphore");
+    }
 }
 
 AppManager::~AppManager() {
-    closeCurrentApp();
     for (auto& app : apps) {
         delete app.second;  // Libera memória dos aplicativos
+    }
+    if (appSemaphore != nullptr) {
+        vSemaphoreDelete(appSemaphore);
     }
 }
 
@@ -32,7 +44,6 @@ void AppManager::openApp(const std::string& appName) {
             return;
         }
         // Atualiza o app atual
-        currentAppName = appName;
         currentApp = getApp(appName);
 
         if (currentApp) {
@@ -60,7 +71,12 @@ void AppManager::closeApp(const std::string& appName) {
             app->onAppClose();
             // app->setClose(true);
             app->setTaskHandle(nullptr);  // Limpa o handle após excluir
-            removeTaskByName(appName);
+
+            if (xSemaphoreTake(taskTableSemaphore, portMAX_DELAY) == pdTRUE) {
+                removeTaskByName(appName);
+                xSemaphoreGive(taskTableSemaphore);
+            }
+
             // Tenta excluir a tarefa
             vTaskDelete(taskHandle);
             ESP_LOGI(TAG, "Task %s excluída com sucesso", appName.c_str());
@@ -74,33 +90,34 @@ void AppManager::closeApp(const std::string& appName) {
     }
 }
 
-void AppManager::closeCurrentApp() {
-    if (!currentAppName.empty()) {
-        if (currentApp) {
-            currentApp->onAppClose();
-            // currentApp->setClose(true);
-        }
-        std::string appName = currentAppName;
-        currentAppName = "";
-        currentApp = nullptr;
-        closeApp(appName);
-
-        if (!taskTable.empty()) {
-            auto it = taskTable.begin();
-            currentAppName = it->appName;
-            currentApp = getApp(currentAppName);
-            if (currentApp) {
-                currentApp->onAppOpen();
-            }
-        }
+App* AppManager::getApp(const std::string& appName) {
+    auto it = apps.find(appName);
+    if (it != apps.end()) {
+        return it->second;
     }
+    return nullptr;
 }
 
 void AppManager::switchToApp(const std::string& appName) {
-    if (apps.find(appName) != apps.end()) {
-        openApp(appName);
-    } else {
-        ESP_LOGE(TAG, "Aplicativo %s não encontrado para troca", appName.c_str());
+    uint32_t nextShowOrder = 0;
+    bool appFound = false;
+    TaskInfo* task = findTaskByName(appName);
+
+    if (!taskTable.empty()) {
+        nextShowOrder = taskTable.back().showOrder + 1;
+    }
+
+    if (xSemaphoreTake(taskTableSemaphore, portMAX_DELAY) == pdTRUE) {
+        if (task != nullptr) {
+            // Atualiza a ordem de exibição da tarefa existente
+            task->showOrder = nextShowOrder;
+        } else {
+            // Adiciona uma nova tarefa se não encontrada
+            TaskInfo newTask{appName, nextShowOrder};
+            taskTable.push_back(newTask);
+        }
+        fixShowOrderGaps(taskTable);
+        xSemaphoreGive(taskTableSemaphore);
     }
 }
 
@@ -127,33 +144,46 @@ void taskAppFunction(void* pvParameters) {
         app->setOpened(true);
         xSemaphoreGive(appManager->appSemaphore);
     }
+    ESP_LOGV(TAG, "Iniciando loop da task para: %s", app->getAppName().c_str());
 
     vTaskDelay(pdMS_TO_TICKS(10));
 
     while (!app->isClosed()) {
         if (!app->isPaused()) {
             app->onAppTick();
-            if (app->getAppName() == appManager->getCurrentAppName()) {
-                app->draw();
-                app->setOnTop(true);
-            } else {
-                app->setOnTop(false);
+            // app->draw();
+            if (xSemaphoreTake(appManager->taskTableSemaphore, portMAX_DELAY) == pdTRUE) {
+                if (app->getAppName() == appManager->getCurrentAppName()) {
+                    app->draw();
+                    app->setOnTop(true);
+                } else {
+                    app->setOnTop(false);
+                }
+                xSemaphoreGive(appManager->taskTableSemaphore);
             }
-
         }  // Chama a função de atualização do service
         vTaskDelay(pdMS_TO_TICKS(50));  // Delay de 1s
     }
 
     app->onAppClose();
     app->setTaskHandle(nullptr);  // Limpa o handle após excluir
-    appManager->removeTaskByName(app->getAppName());
 
+    if (xSemaphoreTake(appManager->taskTableSemaphore, portMAX_DELAY) == pdTRUE) {
+        appManager->removeTaskByName(app->getAppName());
+        xSemaphoreGive(appManager->taskTableSemaphore);
+    }
     delete params;
     vTaskDelete(nullptr);
 }
 
 void AppManager::startAppTask(const std::string& appName) {
     countTasksPerCore(taskTable);
+    fixShowOrderGaps(taskTable);
+    uint32_t nextShowOrder = 0;
+    if (!taskTable.empty()) {
+        nextShowOrder = taskTable.back().showOrder + 1;
+    }
+
     // Seleciona o núcleo com menor carga
     int coreId = (core0Tasks > core1Tasks) ? 1 : 0;
 
@@ -172,9 +202,8 @@ void AppManager::startAppTask(const std::string& appName) {
 
         // Armazena o handle da tarefa
         if (taskHandle) {
-            app->setTaskHandle(taskHandle);
             app->setAppName(appName);
-            vTaskDelay(pdMS_TO_TICKS(10));
+
             ESP_LOGI(TAG, "Task %s criada com sucesso, ponteiro: %p", appName.c_str(), taskHandle);
 
             // Adiciona as informações à tabela
@@ -182,26 +211,13 @@ void AppManager::startAppTask(const std::string& appName) {
             taskInfo.appName = appName;
             taskInfo.priority = app->appPriority();  // A prioridade pode ser ajustada conforme necessário
             taskInfo.coreId = coreId;
+            taskInfo.showOrder = nextShowOrder;
             taskTable.push_back(taskInfo);
-            // app->setOpened(false);
-            // app->setClosed(false);
 
         } else {
             ESP_LOGE(TAG, "Falha ao criar a task para %s", appName.c_str());
         }
     }
-}
-
-App* AppManager::getApp(const std::string& appName) {
-    auto it = apps.find(appName);
-    if (it != apps.end()) {
-        return it->second;
-    }
-    return nullptr;
-}
-
-std::string AppManager::getCurrentAppName() const {
-    return currentAppName;
 }
 
 std::vector<std::pair<std::string, App*>> AppManager::listApps() {
@@ -212,31 +228,6 @@ std::vector<std::pair<std::string, App*>> AppManager::listApps() {
         // ESP_LOGI(TAG, "ProgramaAberto %s", app.first.c_str());
     }
     return appsList;
-}
-
-TaskInfo* AppManager::findTaskByName(const std::string& name) {
-    auto it = std::find_if(taskTable.begin(), taskTable.end(), [&name](const TaskInfo& taskInfo) {
-        return taskInfo.appName == name;
-    });
-    if (it != taskTable.end()) {
-        return &(*it);  // Retorna um ponteiro para o TaskInfo encontrado
-    }
-    return nullptr;  // Retorna nullptr se não encontrar
-}
-
-bool AppManager::removeTaskByName(const std::string& name) {
-    auto it = std::remove_if(taskTable.begin(), taskTable.end(), [&name](const TaskInfo& taskInfo) {
-        return taskInfo.appName == name;
-    });
-
-    if (it != taskTable.end()) {
-        taskTable.erase(it, taskTable.end());  // Remove os elementos encontrados
-        ESP_LOGI("AppManager", "Tarefa %s removida com sucesso", name.c_str());
-        return true;
-    } else {
-        ESP_LOGW("AppManager", "Tarefa %s não encontrada", name.c_str());
-    }
-    return false;
 }
 
 void AppManager::printDebugInfo() {
@@ -254,6 +245,42 @@ void AppManager::printDebugInfo() {
     }
 }
 
+bool AppManager::removeTaskByName(const std::string& name) {
+    auto it = std::remove_if(taskTable.begin(), taskTable.end(), [&name](const TaskInfo& taskInfo) {
+        return taskInfo.appName == name;
+    });
+
+    if (it != taskTable.end()) {
+        taskTable.erase(it, taskTable.end());  // Remove os elementos encontrados
+        ESP_LOGI("AppManager", "Tarefa %s removida com sucesso", name.c_str());
+        return true;
+    } else {
+        ESP_LOGW("AppManager", "Tarefa %s não encontrada", name.c_str());
+    }
+    return false;
+}
+
+std::string AppManager::getCurrentAppName() const {
+    if (!taskTable.empty()) {
+        const TaskInfo& lastTask = taskTable.back();
+        return lastTask.appName;
+    } else {
+        ESP_LOGW(TAG, "Nenhuma tarefa encontrada no taskTable");
+        return "";  // Ou algum valor de retorno padrão ou código de erro
+    }
+}
+
+// --- private --- //
+TaskInfo* AppManager::findTaskByName(const std::string& appName) {
+    bool appFound;
+    for (auto& task : taskTable) {
+        if (task.appName == appName) {
+            return &task;
+        }
+    }
+    return nullptr;
+}
+
 void AppManager::countTasksPerCore(const std::vector<TaskInfo>& taskTable) {
     core0Tasks = 0;
     core1Tasks = 0;
@@ -263,6 +290,21 @@ void AppManager::countTasksPerCore(const std::vector<TaskInfo>& taskTable) {
             core0Tasks++;
         } else if (task.coreId == 1) {
             core1Tasks++;
+        }
+    }
+}
+
+void AppManager::fixShowOrderGaps(std::vector<TaskInfo>& tasks) {
+    // Primeiro, ordenar por showOrder para garantir a sequência correta
+    std::sort(tasks.begin(), tasks.end(), [](const TaskInfo& a, const TaskInfo& b) {
+        return a.showOrder < b.showOrder;
+    });
+
+    // Percorrer o vetor e ajustar showOrder para corrigir os furos
+    for (size_t i = 1; i < tasks.size(); ++i) {
+        if (tasks[i].showOrder != tasks[i - 1].showOrder + 1) {
+            // Ajuste o showOrder para preencher o furo
+            tasks[i].showOrder = tasks[i - 1].showOrder + 1;
         }
     }
 }
