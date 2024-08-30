@@ -57,9 +57,9 @@ void setup() {
     appManager.addApp("Launcher", new Launcher());
 
     // servicesManager.openService("Keyboard");
-    // appManager.openApp("Launcher");
+    appManager.openApp("Launcher");
     // appManager.openApp("Calculadora");
-    appManager.openApp("Settings");
+    // appManager.openApp("Settings");
 }
 
 void loop() {
