@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "AppManager.h"
-#include "Globals.h"
 #include "Service.h"
+#include "core/Globals.h"
 
 #define LINE_COUNT 6
 

@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "Globals.h"
 #include "Keymap.h"
 #include "Service.h"
 #include "ServicesManager.h"
+#include "core/Globals.h"
 
 class Keyboard : public Service {
    public:

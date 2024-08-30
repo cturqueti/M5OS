@@ -24,6 +24,7 @@ GlobalDisplay::GlobalDisplay()
       borderColor(TFT_WHITE),
       zoom(1) {
     display.begin();
+
     if (display.isEPD()) {
         display.setEpdMode(epd_mode_t::epd_fastest);
         display.invertDisplay(true);

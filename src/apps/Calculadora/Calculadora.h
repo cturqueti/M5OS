@@ -11,9 +11,9 @@
 #include "../../services/ScreenManager/ScreenManager.h"
 #include "App.h"
 #include "AppManager.h"
-#include "Globals.h"
 #include "SD.h"
 #include "Utils.h"
+#include "core/Globals.h"
 #include "icon.h"
 
 class Calculadora : public App {

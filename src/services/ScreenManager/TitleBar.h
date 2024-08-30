@@ -6,8 +6,8 @@
 
 #include "AppManager.h"
 #include "GlobalDisplay.h"
-#include "Globals.h"
 #include "Service.h"
+#include "core/Globals.h"
 
 class TitleBar : public Service {
    public:

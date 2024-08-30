@@ -10,9 +10,9 @@
 #include "App.h"
 #include "AppManager.h"
 #include "GlobalDisplay.h"
-#include "Globals.h"
 #include "SD.h"
 #include "Utils.h"
+#include "core/Globals.h"
 
 class Launcher : public App {
    public:

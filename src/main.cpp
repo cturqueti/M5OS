@@ -5,10 +5,10 @@
 #include "Adafruit_NeoPixel.h"
 #include "AppManager.h"
 #include "GlobalDisplay.h"
-#include "Globals.h"
 #include "Preferences.h"
 #include "SD.h"
 #include "SPI.h"
+#include "core/Globals.h"
 // #include "ScreenManager.h"
 #include "ServicesManager.h"
 #include "Utils.h"
@@ -58,7 +58,8 @@ void setup() {
 
     // servicesManager.openService("Keyboard");
     // appManager.openApp("Launcher");
-    appManager.openApp("Calculadora");
+    // appManager.openApp("Calculadora");
+    appManager.openApp("Settings");
 }
 
 void loop() {
